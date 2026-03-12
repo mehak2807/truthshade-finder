@@ -37,7 +37,8 @@ Scoring guide:
 - claims_score: 0-100 (how accurate are the factual claims)
 - risk_level: "low", "medium", or "high"
 - For segments: "verified" = supported by evidence, "questionable" = lacks evidence, "misinformation" = contradicts known facts
-- For findings: provide 3-5 specific observations with type "verified", "questionable", or "misinformation"`;
+- For findings: provide 3-5 specific observations with type "verified", "questionable", or "misinformation"
+- For explanation: provide a clear, detailed, human-readable explanation of your reasoning. Explain WHY the content is rated this way, what specific red flags or green flags you found, what logical fallacies or manipulation techniques are used (if any), and what a reader should watch out for. This is the "Explainable AI" section — be thorough and educational.`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -121,6 +122,10 @@ Scoring guide:
                         additionalProperties: false,
                       },
                     },
+                    explanation: {
+                      type: "string",
+                      description: "A detailed, human-readable explanation of the AI's reasoning process, red flags found, manipulation techniques detected, and advice for the reader.",
+                    },
                   },
                   required: [
                     "overall_score",
@@ -129,6 +134,7 @@ Scoring guide:
                     "risk_level",
                     "segments",
                     "findings",
+                    "explanation",
                   ],
                   additionalProperties: false,
                 },
