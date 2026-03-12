@@ -1,39 +1,21 @@
 import { motion } from "framer-motion";
-import { Shield, AlertTriangle, XOctagon, Brain } from "lucide-react";
+import { Shield, AlertTriangle, XOctagon } from "lucide-react";
 
-interface Finding {
-  icon: React.ReactNode;
+export interface Finding {
   title: string;
   description: string;
   type: "verified" | "questionable" | "misinformation";
 }
 
-const findings: Finding[] = [
-  {
-    icon: <Shield className="w-5 h-5" />,
-    title: "Source Attribution Verified",
-    description: "The Journal of Medicine and Harvard University are real institutions with verifiable research records.",
-    type: "verified",
-  },
-  {
-    icon: <AlertTriangle className="w-5 h-5" />,
-    title: "Missing Peer Review",
-    description: "The study has not been peer-reviewed, which weakens the reliability of the claims significantly.",
-    type: "questionable",
-  },
-  {
-    icon: <XOctagon className="w-5 h-5" />,
-    title: "Exaggerated Health Claims",
-    description: "'Cures all known diseases' is a classic misinformation pattern. No single substance can cure all diseases.",
-    type: "misinformation",
-  },
-  {
-    icon: <Brain className="w-5 h-5" />,
-    title: "Conspiracy Language Detected",
-    description: "Phrases like 'don't want you to know' are emotional manipulation tactics commonly used in misinformation.",
-    type: "misinformation",
-  },
-];
+interface AnalysisPanelProps {
+  findings: Finding[];
+}
+
+const iconMap = {
+  verified: <Shield className="w-5 h-5" />,
+  questionable: <AlertTriangle className="w-5 h-5" />,
+  misinformation: <XOctagon className="w-5 h-5" />,
+};
 
 const typeStyles = {
   verified: "border-trust-verified/30 bg-trust-verified/5",
@@ -47,7 +29,7 @@ const iconColors = {
   misinformation: "text-trust-misinformation",
 };
 
-const AnalysisPanel = () => {
+const AnalysisPanel = ({ findings }: AnalysisPanelProps) => {
   return (
     <div className="space-y-3">
       {findings.map((finding, i) => (
@@ -59,7 +41,7 @@ const AnalysisPanel = () => {
           transition={{ delay: 0.2 * i, duration: 0.5 }}
         >
           <div className="flex items-start gap-3">
-            <span className={`mt-0.5 ${iconColors[finding.type]}`}>{finding.icon}</span>
+            <span className={`mt-0.5 ${iconColors[finding.type]}`}>{iconMap[finding.type]}</span>
             <div>
               <h4 className="font-semibold text-sm text-foreground">{finding.title}</h4>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{finding.description}</p>

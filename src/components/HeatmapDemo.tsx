@@ -1,22 +1,13 @@
 import { motion } from "framer-motion";
 
-interface Segment {
+export interface Segment {
   text: string;
   level: "verified" | "questionable" | "misinformation";
 }
 
-const sampleSegments: Segment[] = [
-  { text: "A new study published in the Journal of Medicine", level: "verified" },
-  { text: " found that drinking 8 glasses of water daily ", level: "verified" },
-  { text: "cures all known diseases", level: "misinformation" },
-  { text: ", according to researchers at Harvard University. ", level: "verified" },
-  { text: "The study, which has not yet been peer-reviewed", level: "questionable" },
-  { text: ", analyzed data from over 10,000 participants. ", level: "verified" },
-  { text: "Experts warn that these claims are exaggerated and lack scientific basis", level: "questionable" },
-  { text: ". The WHO has confirmed ", level: "verified" },
-  { text: "water has miraculous healing properties that pharmaceutical companies don't want you to know about", level: "misinformation" },
-  { text: ".", level: "verified" },
-];
+interface HeatmapDemoProps {
+  segments: Segment[];
+}
 
 const levelStyles = {
   verified: "bg-trust-verified/15 border-b-2 border-trust-verified/40",
@@ -24,7 +15,7 @@ const levelStyles = {
   misinformation: "bg-trust-misinformation/15 border-b-2 border-trust-misinformation/40",
 };
 
-const HeatmapDemo = () => {
+const HeatmapDemo = ({ segments }: HeatmapDemoProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-6 text-xs text-muted-foreground">
@@ -45,13 +36,13 @@ const HeatmapDemo = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
-        {sampleSegments.map((seg, i) => (
+        {segments.map((seg, i) => (
           <motion.span
             key={i}
             className={`${levelStyles[seg.level]} px-0.5 rounded-sm`}
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 * i, duration: 0.4 }}
+            transition={{ delay: 0.05 * i, duration: 0.4 }}
           >
             {seg.text}
           </motion.span>
