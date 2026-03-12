@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, Search, Scan, Loader2 } from "lucide-react";
+import { ShieldCheck, Search, Scan, Loader2, Image, Type } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import CredibilityGauge from "@/components/CredibilityGauge";
 import HeatmapDemo, { type Segment } from "@/components/HeatmapDemo";
 import AnalysisPanel, { type Finding } from "@/components/AnalysisPanel";
+import ExplainableAI from "@/components/ExplainableAI";
+import ImageUpload from "@/components/ImageUpload";
 
 interface AnalysisResult {
   overall_score: number;
@@ -14,6 +16,7 @@ interface AnalysisResult {
   risk_level: "low" | "medium" | "high";
   segments: Segment[];
   findings: Finding[];
+  explanation: string;
 }
 
 const riskColors = {
@@ -27,7 +30,9 @@ const riskLabels = { low: "Low Risk", medium: "Medium Risk", high: "High Risk" }
 const Index = () => {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [inputMode, setInputMode] = useState<"text" | "image">("text");
 
   const handleAnalyze = async () => {
     const trimmed = inputText.trim();
@@ -44,13 +49,8 @@ const Index = () => {
         body: { text: trimmed },
       });
 
-      if (error) {
-        throw new Error(error.message || "Analysis failed");
-      }
-
-      if (data?.error) {
-        throw new Error(data.error);
-      }
+      if (error) throw new Error(error.message || "Analysis failed");
+      if (data?.error) throw new Error(data.error);
 
       setResult(data as AnalysisResult);
     } catch (e: any) {
@@ -85,7 +85,7 @@ const Index = () => {
             Detect <span className="text-gradient-trust">misinformation</span> in real time
           </h1>
           <p className="mt-5 text-lg text-muted-foreground leading-relaxed max-w-lg">
-            AI-powered credibility analysis for news articles, social media posts, and claims. Paste any text and get instant results.
+            AI-powered credibility analysis for news articles, social media posts, and claims. Paste text or upload an image for instant results.
           </p>
         </motion.div>
 
@@ -96,18 +96,58 @@ const Index = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
         >
+          {/* Mode toggle */}
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => setInputMode("text")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                inputMode === "text"
+                  ? "bg-trust-glow/15 text-trust-glow border border-trust-glow/30"
+                  : "bg-secondary text-muted-foreground border border-border hover:text-foreground"
+              }`}
+            >
+              <Type className="w-4 h-4" /> Text
+            </button>
+            <button
+              onClick={() => setInputMode("image")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                inputMode === "image"
+                  ? "bg-trust-glow/15 text-trust-glow border border-trust-glow/30"
+                  : "bg-secondary text-muted-foreground border border-border hover:text-foreground"
+              }`}
+            >
+              <Image className="w-4 h-4" /> Image (OCR)
+            </button>
+          </div>
+
           <div className="rounded-xl border border-border bg-card shadow-card p-1">
+            {inputMode === "image" && (
+              <div className="p-4 pb-2">
+                <ImageUpload
+                  onTextExtracted={(text) => {
+                    setInputText(text);
+                    toast.success("Text extracted from image!");
+                  }}
+                  isExtracting={isExtracting}
+                  setIsExtracting={setIsExtracting}
+                />
+              </div>
+            )}
             <textarea
               className="w-full bg-transparent resize-none p-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-h-[120px]"
-              placeholder="Paste a news article, claim, or social media post to analyze..."
+              placeholder={
+                inputMode === "image"
+                  ? "Extracted text will appear here. You can also edit it before analyzing..."
+                  : "Paste a news article, claim, or social media post to analyze..."
+              }
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              disabled={isLoading}
+              disabled={isLoading || isExtracting}
             />
             <div className="flex items-center justify-end p-3 pt-0">
               <button
                 onClick={handleAnalyze}
-                disabled={isLoading || !inputText.trim()}
+                disabled={isLoading || isExtracting || !inputText.trim()}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-trust-glow text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
@@ -164,6 +204,13 @@ const Index = () => {
                 <AnalysisPanel findings={result.findings} />
               </div>
             </div>
+
+            {/* Explainable AI */}
+            {result.explanation && (
+              <div className="mt-8">
+                <ExplainableAI explanation={result.explanation} />
+              </div>
+            )}
           </div>
         </motion.section>
       )}
@@ -174,8 +221,8 @@ const Index = () => {
           <div className="grid sm:grid-cols-3 gap-6">
             {[
               { icon: <Search className="w-5 h-5 text-trust-glow" />, title: "Real-Time AI Analysis", desc: "Powered by advanced AI models that analyze claims, sources, and language patterns instantly." },
-              { icon: <Scan className="w-5 h-5 text-trust-glow" />, title: "Visual Heatmap", desc: "See misinformation highlighted directly in the text with color-coded risk levels." },
-              { icon: <ShieldCheck className="w-5 h-5 text-trust-glow" />, title: "Explainable AI", desc: "Understand exactly why content is flagged with clear, detailed explanations." },
+              { icon: <Scan className="w-5 h-5 text-trust-glow" />, title: "Image OCR & Heatmap", desc: "Upload screenshots of fake news. AI extracts text and highlights misinformation visually." },
+              { icon: <ShieldCheck className="w-5 h-5 text-trust-glow" />, title: "Explainable AI", desc: "Understand exactly why content is flagged with detailed reasoning and manipulation technique detection." },
             ].map((f, i) => (
               <motion.div
                 key={i}
