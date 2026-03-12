@@ -122,6 +122,10 @@ Scoring guide:
                         additionalProperties: false,
                       },
                     },
+                    explanation: {
+                      type: "string",
+                      description: "A detailed, human-readable explanation of the AI's reasoning process, red flags found, manipulation techniques detected, and advice for the reader.",
+                    },
                   },
                   required: [
                     "overall_score",
@@ -130,6 +134,7 @@ Scoring guide:
                     "risk_level",
                     "segments",
                     "findings",
+                    "explanation",
                   ],
                   additionalProperties: false,
                 },
