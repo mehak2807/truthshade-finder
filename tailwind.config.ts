@@ -47,6 +47,12 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        trust: {
+          verified: "hsl(var(--trust-verified))",
+          questionable: "hsl(var(--trust-questionable))",
+          misinformation: "hsl(var(--trust-misinformation))",
+          glow: "hsl(var(--trust-glow))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
