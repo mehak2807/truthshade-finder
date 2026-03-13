@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.screenshot-fact-check]
 verify_jwt = false
+
+[functions.fact-check]
+verify_jwt = false

@@ -75,6 +75,23 @@ body {
   font-weight: 600;
 }
 
+.language-select {
+  width: 100%;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  border: 1px solid #d1d9e2;
+  padding: 8px 10px;
+  font-size: 13px;
+  background: #fff;
+  color: #0f172a;
+  outline: none;
+}
+
+.language-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+}
+
 textarea {
   width: 100%;
   border-radius: 10px;
@@ -242,6 +259,12 @@ textarea:focus {
   overflow: hidden;
 }
 
+.language-info {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 11px;
+}
+
 .score-fill {
   height: 100%;
   width: 0;
@@ -257,6 +280,45 @@ textarea:focus {
   font-size: 12px;
   background: #fee2e2;
   color: #991b1b;
+}
+
+.forward-alert {
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  padding: 9px;
+}
+
+.forward-alert h3 {
+  margin: 0;
+  color: #9f1239;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 12px;
+}
+
+.forward-subtitle {
+  margin: 8px 0 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7f1d1d;
+}
+
+.forward-line {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #881337;
+}
+
+.forward-patterns {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.forward-patterns li {
+  font-size: 11px;
+  color: #7f1d1d;
 }
 
 h3 {
