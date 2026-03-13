@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TruthShade AI Verifier</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="header">
+        <div>
+          <h1>TruthShade</h1>
+          <p>Quick misinformation check</p>
+        </div>
+        <span id="statusBadge" class="badge">Ready</span>
+      </header>
+
+      <section class="input-card">
+        <label class="label" for="textInput">Paste suspicious text</label>
+        <textarea id="textInput" rows="4" placeholder="Paste a WhatsApp forward, tweet, headline, or selected text..."></textarea>
+
+        <div id="dropZone" class="drop-zone">
+          <input id="imageInput" type="file" accept="image/png,image/jpeg,image/jpg" hidden />
+          <p><strong>Drop screenshot here</strong> or <button id="browseBtn" class="link-btn" type="button">browse</button></p>
+          <p class="hint">PNG/JPG up to 10MB</p>
+          <img id="preview" alt="Screenshot preview" hidden />
+        </div>
+
+        <button id="checkBtn" class="primary-btn" type="button">Check Authenticity</button>
+      </section>
+
+      <section id="loading" class="loading" hidden>
+        <div class="spinner"></div>
+        <p>AI is analyzing content...</p>
+      </section>
+
+      <section id="resultCard" class="result-card" hidden>
+        <div class="result-top">
+          <div>
+            <p class="muted">Credibility Score</p>
+            <h2 id="scoreText">0/100</h2>
+          </div>
+          <span id="verdictPill" class="pill">Unverified</span>
+        </div>
+        <div class="score-bar">
+          <div id="scoreFill" class="score-fill"></div>
+        </div>
+        <p id="warningText" class="warning" hidden></p>
+
+        <h3>Explanation</h3>
+        <p id="explanationText" class="explanation"></p>
+
+        <h3>Sources</h3>
+        <ul id="sourceList" class="source-list"></ul>
+      </section>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
