@@ -39,6 +39,7 @@ const modeConfig = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
