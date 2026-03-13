@@ -215,9 +215,9 @@ const Index = () => {
           </p>
         </motion.div>
 
-        {/* Input card */}
+        {/* Input section */}
         <motion.div
-          className="max-w-2xl"
+          className="w-full max-w-4xl"
           initial={prefersReducedMotion ? {} : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.12 }}
@@ -250,41 +250,45 @@ const Index = () => {
             ))}
           </div>
 
-          {/* Input panel */}
-          <div className="rounded-2xl border border-border/70 bg-white/90 shadow-elevated backdrop-blur-sm overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={inputMode}
-                initial={prefersReducedMotion ? {} : { opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={prefersReducedMotion ? {} : { opacity: 0, x: -10 }}
-                transition={{ duration: 0.18 }}
-              >
-                {inputMode === "screenshot" && (
-                  <div className="p-4">
-                    <ScreenshotFactChecker />
-                  </div>
-                )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={inputMode}
+              initial={prefersReducedMotion ? {} : { opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={prefersReducedMotion ? {} : { opacity: 0, x: -10 }}
+              transition={{ duration: 0.18 }}
+            >
+              {/* Screenshot mode — full width */}
+              {inputMode === "screenshot" && (
+                <div className="rounded-2xl border border-border/70 bg-white/90 shadow-elevated backdrop-blur-sm p-4">
+                  <ScreenshotFactChecker />
+                </div>
+              )}
 
-                {inputMode === "url" && (
-                  <UrlInput
-                    onTextExtracted={(text) => {
-                      setInputText(text);
-                      toast.success("Content fetched from URL!");
-                    }}
-                    isExtracting={isExtracting}
-                    setIsExtracting={setIsExtracting}
-                  />
-                )}
-
-                {inputMode === "voice" && (
+              {/* Voice mode — full width */}
+              {inputMode === "voice" && (
+                <div className="rounded-2xl border border-border/70 bg-white/90 shadow-elevated backdrop-blur-sm">
                   <VoiceInput onTranscript={handleVoiceTranscript} />
-                )}
+                </div>
+              )}
 
-                {(inputMode === "text" || inputMode === "url") && (
-                  <>
+              {/* Text / URL mode — two-column on desktop */}
+              {(inputMode === "text" || inputMode === "url") && (
+                <div className="grid lg:grid-cols-[1fr_220px] gap-4 items-start">
+                  {/* Left: input panel */}
+                  <div className="rounded-2xl border border-border/70 bg-white/90 shadow-elevated backdrop-blur-sm overflow-hidden">
+                    {inputMode === "url" && (
+                      <UrlInput
+                        onTextExtracted={(text) => {
+                          setInputText(text);
+                          toast.success("Content fetched from URL!");
+                        }}
+                        isExtracting={isExtracting}
+                        setIsExtracting={setIsExtracting}
+                      />
+                    )}
                     <textarea
-                      className="w-full bg-transparent resize-none p-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-h-[108px]"
+                      className="w-full bg-transparent resize-none p-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-h-[140px]"
                       placeholder={
                         inputMode === "url"
                           ? "Fetched content will appear here..."
@@ -294,42 +298,64 @@ const Index = () => {
                       onChange={(e) => setInputText(e.target.value)}
                       disabled={isLoading || isExtracting}
                     />
-                    <div className="flex items-center justify-end px-4 pb-3 gap-2">
-                      <motion.button
-                        onClick={() => handleAnalyze()}
-                        disabled={isLoading || isExtracting || !inputText.trim()}
-                        className="flex items-center gap-2 px-5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-md hover:shadow-lg transition-shadow disabled:opacity-40 disabled:cursor-not-allowed"
-                        whileHover={prefersReducedMotion ? {} : { scale: 1.04, y: -1 }}
-                        whileTap={prefersReducedMotion ? {} : { scale: 0.97 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                      >
-                        {isLoading ? (
-                          <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>
-                        ) : (
-                          <><Search className="w-4 h-4" /> Analyze</>
-                        )}
-                      </motion.button>
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+                  </div>
 
-          {/* Loading skeleton */}
-          <AnimatePresence>
-            {isLoading && (
-              <motion.div
-                className="mt-6 space-y-3"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <div className="h-4 rounded-full skeleton-shimmer w-3/4" />
-                <div className="h-4 rounded-full skeleton-shimmer w-1/2" />
-                <div className="h-4 rounded-full skeleton-shimmer w-5/6" />
-              </motion.div>
-            )}
+                  {/* Right: Analyze button + skeleton preview card */}
+                  <div className="flex flex-col gap-3">
+                    <motion.button
+                      onClick={() => handleAnalyze()}
+                      disabled={isLoading || isExtracting || !inputText.trim()}
+                      className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-md hover:shadow-lg transition-shadow disabled:opacity-40 disabled:cursor-not-allowed"
+                      whileHover={prefersReducedMotion ? {} : { scale: 1.03, y: -1 }}
+                      whileTap={prefersReducedMotion ? {} : { scale: 0.97 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    >
+                      {isLoading ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>
+                      ) : (
+                        <><Search className="w-4 h-4" /> Analyze</>
+                      )}
+                    </motion.button>
+
+                    {/* Skeleton preview card */}
+                    <div className="rounded-2xl border border-border/70 bg-white/90 shadow-elevated backdrop-blur-sm p-4">
+                      <AnimatePresence mode="wait">
+                        {isLoading ? (
+                          <motion.div
+                            key="loading"
+                            className="space-y-3"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                          >
+                            <div className="h-3 rounded-full skeleton-shimmer w-3/4" />
+                            <div className="h-3 rounded-full skeleton-shimmer w-1/2" />
+                            <div className="h-3 rounded-full skeleton-shimmer w-5/6" />
+                            <div className="h-3 rounded-full skeleton-shimmer w-2/3" />
+                            <div className="h-3 rounded-full skeleton-shimmer w-4/5" />
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="idle"
+                            className="flex flex-col items-center justify-center gap-2 py-3 text-center"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                          >
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Search className="w-4 h-4 text-primary/60" />
+                            </div>
+                            <p className="text-xs text-muted-foreground leading-snug">
+                              Analysis preview will appear here
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
           </AnimatePresence>
         </motion.div>
 
@@ -362,48 +388,53 @@ const Index = () => {
                   </span>
                 </div>
 
-                {/* Result cards — staggered entrance */}
-                <div className="grid lg:grid-cols-3 gap-5">
-                  {[
-                    {
-                      title: "Credibility",
-                      content: (
-                        <>
-                          <div className="flex justify-center mb-5">
-                            <CredibilityGauge score={result.overall_score} label="Overall" size="lg" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
-                            <CredibilityGauge score={result.source_score} label="Source" size="sm" />
-                            <CredibilityGauge score={result.claims_score} label="Claims" size="sm" />
-                          </div>
-                        </>
-                      ),
-                    },
-                    {
-                      title: "Heatmap",
-                      content: <HeatmapDemo segments={result.segments} />,
-                      extra: "overflow-auto max-h-[460px]",
-                    },
-                    {
-                      title: "Findings",
-                      content: <AnalysisPanel findings={result.findings} />,
-                      extra: "overflow-auto max-h-[460px]",
-                    },
-                  ].map((card, i) => (
-                    <motion.div
-                      key={card.title}
-                      className={`rounded-2xl border border-border/70 bg-white/90 p-5 shadow-elevated backdrop-blur-sm ${card.extra ?? ""}`}
-                      initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.08 * i, duration: 0.4 }}
-                    >
-                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                        {card.title}
-                      </h3>
-                      {card.content}
-                    </motion.div>
-                  ))}
+                {/* Result cards — 2-column on desktop (Credibility + Findings) */}
+                <div className="grid lg:grid-cols-2 gap-5">
+                  {/* Credibility card */}
+                  <motion.div
+                    className="rounded-2xl border border-border/70 bg-white/90 p-5 shadow-elevated backdrop-blur-sm"
+                    initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0, duration: 0.4 }}
+                  >
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                      Credibility
+                    </h3>
+                    <div className="flex justify-center mb-5">
+                      <CredibilityGauge score={result.overall_score} label="Overall" size="lg" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
+                      <CredibilityGauge score={result.source_score} label="Source" size="sm" />
+                      <CredibilityGauge score={result.claims_score} label="Claims" size="sm" />
+                    </div>
+                  </motion.div>
+
+                  {/* Findings card */}
+                  <motion.div
+                    className="rounded-2xl border border-border/70 bg-white/90 p-5 shadow-elevated backdrop-blur-sm overflow-auto max-h-[460px]"
+                    initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.08, duration: 0.4 }}
+                  >
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                      Findings
+                    </h3>
+                    <AnalysisPanel findings={result.findings} />
+                  </motion.div>
                 </div>
+
+                {/* Heatmap — full width */}
+                <motion.div
+                  className="mt-5 rounded-2xl border border-border/70 bg-white/90 p-5 shadow-elevated backdrop-blur-sm overflow-auto max-h-[460px]"
+                  initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.16, duration: 0.4 }}
+                >
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                    Heatmap
+                  </h3>
+                  <HeatmapDemo segments={result.segments} />
+                </motion.div>
 
                 {result.explanation && (
                   <motion.div
