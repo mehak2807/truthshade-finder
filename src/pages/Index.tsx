@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Flame, Home, Loader2, Search, Scan, Type, Globe, ArrowRight } from "lucide-react";
+import { Flame, Home, Loader2, Mic, Search, Scan, Type, Globe, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import AnalysisPanel, { type Finding } from "@/components/AnalysisPanel";
 import ExplainableAI from "@/components/ExplainableAI";
 import ScreenshotFactChecker from "@/components/ScreenshotFactChecker";
 import UrlInput from "@/components/UrlInput";
+import VoiceInput from "@/components/VoiceInput";
 import logo from "@/assets/trustvault-logo.png";
 
 interface AnalysisResult {
@@ -42,12 +43,13 @@ const riskColors = {
 
 const riskLabels = { low: "Low Risk", medium: "Medium Risk", high: "High Risk" };
 
-type InputMode = "text" | "screenshot" | "url";
+type InputMode = "text" | "screenshot" | "url" | "voice";
 
 const modeConfig = [
   { key: "text" as InputMode, icon: Type, label: "Text" },
   { key: "screenshot" as InputMode, icon: Scan, label: "Screenshot" },
   { key: "url" as InputMode, icon: Globe, label: "URL" },
+  { key: "voice" as InputMode, icon: Mic, label: "Voice" },
 ];
 
 const hotTopics = [
@@ -116,8 +118,8 @@ const Index = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleAnalyze = async () => {
-    const trimmed = inputText.trim();
+  const handleAnalyze = async (overrideText?: string) => {
+    const trimmed = (overrideText ?? inputText).trim();
     if (!trimmed) {
       toast.error("Please enter some text to analyze.");
       return;
@@ -153,6 +155,11 @@ const Index = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleVoiceTranscript = (text: string) => {
+    setInputText(text);
+    handleAnalyze(text);
   };
 
   return (
@@ -231,7 +238,11 @@ const Index = () => {
               />
             )}
 
-            {inputMode !== "screenshot" && (
+            {inputMode === "voice" && (
+              <VoiceInput onTranscript={handleVoiceTranscript} />
+            )}
+
+            {(inputMode === "text" || inputMode === "url") && (
               <>
                 <textarea
                   className="w-full bg-transparent resize-none p-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-h-[100px]"
@@ -246,7 +257,7 @@ const Index = () => {
                 />
                 <div className="flex items-center justify-end p-3 pt-0">
                   <button
-                    onClick={handleAnalyze}
+                    onClick={() => handleAnalyze()}
                     disabled={isLoading || isExtracting || !inputText.trim()}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                   >
