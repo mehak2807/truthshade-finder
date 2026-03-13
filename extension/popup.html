@@ -17,6 +17,21 @@
       </header>
 
       <section class="input-card">
+        <label class="label" for="languageSelect">Language</label>
+        <select id="languageSelect" class="language-select">
+          <option value="auto">Auto Detect</option>
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="bn">Bengali</option>
+          <option value="ta">Tamil</option>
+          <option value="te">Telugu</option>
+          <option value="mr">Marathi</option>
+          <option value="gu">Gujarati</option>
+          <option value="kn">Kannada</option>
+          <option value="ml">Malayalam</option>
+          <option value="pa">Punjabi</option>
+        </select>
+
         <label class="label" for="textInput">Paste suspicious text</label>
         <textarea id="textInput" rows="4" placeholder="Paste a WhatsApp forward, tweet, headline, or selected text..."></textarea>
 
@@ -41,12 +56,22 @@
             <p class="muted">Credibility Score</p>
             <h2 id="scoreText">0/100</h2>
           </div>
-          <span id="verdictPill" class="pill">Unverified</span>
+          <span id="verdictPill" class="pill">⚪ Unverified</span>
         </div>
         <div class="score-bar">
           <div id="scoreFill" class="score-fill"></div>
         </div>
+        <p id="languageInfo" class="language-info"></p>
         <p id="warningText" class="warning" hidden></p>
+
+        <div id="forwardAlert" class="forward-alert" hidden>
+          <h3>🚨 Viral WhatsApp Forward Detected</h3>
+          <p id="forwardSimilarity" class="forward-line"></p>
+          <p class="forward-subtitle">Pattern:</p>
+          <ul id="forwardPatterns" class="forward-patterns"></ul>
+          <p class="forward-subtitle">Recommendation:</p>
+          <p id="forwardRecommendation" class="forward-line"></p>
+        </div>
 
         <h3>Explanation</h3>
         <p id="explanationText" class="explanation"></p>

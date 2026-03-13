@@ -1,0 +1,77 @@
+[
+  {
+    "id": "MISINFO_1023",
+    "title": "Fake Government Student Grant",
+    "seed_text": "Government announced today that all students will receive instant grant money. Register now and share with 20 contacts.",
+    "fingerprint": {
+      "keywords": ["government scheme", "students", "money transfer", "urgent share"],
+      "entities": ["Government", "Students"],
+      "urls": ["xyz-scheme-benefit.in"],
+      "claim_type": "financial benefit scheme"
+    },
+    "verdict": "False",
+    "detected_pattern": "Fake government benefit scheme",
+    "explanation": "This message falsely claims a government cash scheme and uses urgency triggers to force sharing.",
+    "fact_check_sources": ["PIB Fact Check", "AltNews", "BoomLive"]
+  },
+  {
+    "id": "MISINFO_2031",
+    "title": "Fake Bank KYC Alert",
+    "seed_text": "Your bank account will be blocked tonight. Complete KYC now on this link and forward to all family groups.",
+    "fingerprint": {
+      "keywords": ["bank alert", "kyc", "account blocked", "urgent"],
+      "entities": ["Bank"],
+      "urls": ["bit.ly/secure-kyc"],
+      "claim_type": "banking panic alert"
+    },
+    "verdict": "False",
+    "detected_pattern": "Fake bank alert",
+    "explanation": "Fraud forwards often use account blocking fear and suspicious links for phishing.",
+    "fact_check_sources": ["PIB Fact Check", "Cyber Dost", "RBI Alerts"]
+  },
+  {
+    "id": "MISINFO_3094",
+    "title": "Fake Mega Job Recruitment",
+    "seed_text": "Central government has opened 2 lakh jobs today with no exam. Apply on private link before midnight and share quickly.",
+    "fingerprint": {
+      "keywords": ["jobs", "government recruitment", "no exam", "apply now"],
+      "entities": ["Central government"],
+      "urls": ["gov-job-fasttrack.in"],
+      "claim_type": "fake recruitment drive"
+    },
+    "verdict": "False",
+    "detected_pattern": "Fake job recruitment message",
+    "explanation": "High-volume scam forwards misuse job urgency and private domains to collect personal data.",
+    "fact_check_sources": ["PIB Fact Check", "AltNews", "BOOM FactCheck"]
+  },
+  {
+    "id": "MISINFO_4122",
+    "title": "Miracle Health Cure Chain Message",
+    "seed_text": "Doctors confirmed this home remedy cures diabetes in 3 days. Pharma companies hide this truth. Share with everyone.",
+    "fingerprint": {
+      "keywords": ["miracle cure", "doctors confirmed", "share with everyone"],
+      "entities": ["Doctors", "Pharma companies"],
+      "urls": [],
+      "claim_type": "health misinformation"
+    },
+    "verdict": "False",
+    "detected_pattern": "Health misinformation",
+    "explanation": "Miracle cure claims without clinical evidence are common medical misinformation patterns.",
+    "fact_check_sources": ["WHO Mythbusters", "PIB Fact Check", "AltNews"]
+  },
+  {
+    "id": "MISINFO_5180",
+    "title": "Panic-Inducing Rumor",
+    "seed_text": "Emergency curfew will be announced in all cities tonight. Stock groceries immediately and forward as received.",
+    "fingerprint": {
+      "keywords": ["emergency", "curfew", "stock groceries", "forwarded as received"],
+      "entities": ["Cities"],
+      "urls": [],
+      "claim_type": "panic rumor"
+    },
+    "verdict": "False",
+    "detected_pattern": "Panic-inducing rumor",
+    "explanation": "False emergency rumors spread rapidly through closed groups using panic language.",
+    "fact_check_sources": ["PIB Fact Check", "Factly", "BoomLive"]
+  }
+]

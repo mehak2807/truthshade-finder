@@ -1,5 +1,21 @@
-const API_ENDPOINT = "http://localhost:3000/api/fact-check";
+const DEFAULT_API_ENDPOINT = "https://rbbdjyhijolreehhojva.supabase.co/functions/v1/fact-check";
 const MENU_ID = "truthshade-verify-selection";
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const REQUEST_TIMEOUT_MS = 5500;
+
+function hashInput(value) {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash << 5) - hash + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return String(hash);
+}
+
+async function getApiEndpoint() {
+  const stored = await chrome.storage.local.get(["apiEndpoint"]);
+  return stored.apiEndpoint || DEFAULT_API_ENDPOINT;
+}
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
@@ -10,11 +26,16 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 async function callFactCheck(payload) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const API_ENDPOINT = await getApiEndpoint();
   const response = await fetch(API_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
+    signal: controller.signal,
   });
+  clearTimeout(timeout);
 
   if (!response.ok) {
     const text = await response.text();
@@ -22,6 +43,22 @@ async function callFactCheck(payload) {
   }
 
   return response.json();
+}
+
+async function readResultCache(cacheKey) {
+  const stored = await chrome.storage.local.get(["resultCache"]);
+  const cache = stored.resultCache || {};
+  const entry = cache[cacheKey];
+  if (!entry) return null;
+  const fresh = Date.now() - Number(entry.savedAt || 0) <= CACHE_TTL_MS;
+  return fresh ? entry.result : null;
+}
+
+async function writeResultCache(cacheKey, result) {
+  const stored = await chrome.storage.local.get(["resultCache"]);
+  const cache = stored.resultCache || {};
+  cache[cacheKey] = { result, savedAt: Date.now() };
+  await chrome.storage.local.set({ resultCache: cache });
 }
 
 function normalizeResult(result) {
@@ -44,6 +81,15 @@ function normalizeResult(result) {
     verdict,
     explanation: String(result?.explanation ?? "No explanation returned."),
     sources,
+    forward_detected: Boolean(result?.forward_detected),
+    similarity_score: Number(result?.similarity_score ?? 0),
+    risk_score: Number(result?.risk_score ?? 0),
+    forward_verdict: String(result?.forward_verdict ?? "No match"),
+    detected_pattern: String(result?.detected_pattern ?? ""),
+    message_type: String(result?.message_type ?? ""),
+    recommended_action: String(result?.recommended_action ?? ""),
+    forward_signals: Array.isArray(result?.forward_signals) ? result.forward_signals : [],
+    forward_explanation: String(result?.forward_explanation ?? ""),
   };
 }
 
@@ -56,21 +102,31 @@ async function getSelectionFromTab(tabId) {
   }
 }
 
-async function verifyAndStore(content, type) {
+async function verifyAndStore(content, type, language = "auto") {
+  const cacheKey = `${type}:${language}:${hashInput(content.slice(0, 1200))}`;
+  const cachedResult = await readResultCache(cacheKey);
+  if (cachedResult) {
+    await chrome.storage.local.set({ lastResult: cachedResult });
+    return cachedResult;
+  }
+
   chrome.action.setBadgeText({ text: "..." });
   chrome.action.setBadgeBackgroundColor({ color: "#0f172a" });
 
   try {
-    const apiResult = await callFactCheck({ content, type });
+    const apiResult = await callFactCheck({ content, type, language });
     const normalized = normalizeResult(apiResult);
     const lastResult = {
       ...normalized,
       content,
       type,
+      detected_language: apiResult?.detected_language || "en",
+      output_language: apiResult?.output_language || (language === "auto" ? apiResult?.detected_language || "en" : language),
       checkedAt: new Date().toISOString(),
     };
 
     await chrome.storage.local.set({ lastResult });
+    await writeResultCache(cacheKey, lastResult);
 
     const isWarning =
       normalized.verdict === "Fake" ||
@@ -101,7 +157,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 
   try {
-    await verifyAndStore(content, "text");
+    await verifyAndStore(content, "text", "auto");
   } catch (error) {
     chrome.action.setBadgeText({ text: "ERR" });
     chrome.action.setBadgeBackgroundColor({ color: "#b91c1c" });
@@ -111,7 +167,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "VERIFY_CONTENT") {
-    verifyAndStore(message.content, message.inputType)
+    verifyAndStore(message.content, message.inputType, message.language || "auto")
       .then((result) => sendResponse({ ok: true, result }))
       .catch((error) => sendResponse({ ok: false, error: error instanceof Error ? error.message : "Unknown error" }));
     return true;

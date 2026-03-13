@@ -26,6 +26,15 @@ interface ScreenshotFactCheckResult {
   sources: VerificationSource[];
   suspicious_phrases: string[];
   explanation: string;
+  forward_detected?: boolean;
+  similarity_score?: number;
+  risk_score?: number;
+  forward_verdict?: string;
+  detected_pattern?: string;
+  message_type?: string;
+  forward_explanation?: string;
+  recommended_action?: string;
+  forward_signals?: string[];
 }
 
 type AnalyzeNewsFallback = {
@@ -186,7 +195,26 @@ const ScreenshotFactChecker = () => {
       }
       if (data?.error) throw new Error(data.error);
 
-      setResult(data as ScreenshotFactCheckResult);
+      let enrichedResult = data as ScreenshotFactCheckResult;
+      const forward = await supabase.functions.invoke("fact-check", {
+        body: { content: ocrText, language: "auto", type: "text" },
+      });
+      if (!forward.error && forward.data) {
+        enrichedResult = {
+          ...enrichedResult,
+          forward_detected: forward.data.forward_detected,
+          similarity_score: forward.data.similarity_score,
+          risk_score: forward.data.risk_score,
+          forward_verdict: forward.data.forward_verdict,
+          detected_pattern: forward.data.detected_pattern,
+          message_type: forward.data.message_type,
+          forward_explanation: forward.data.forward_explanation,
+          recommended_action: forward.data.recommended_action,
+          forward_signals: forward.data.forward_signals,
+        };
+      }
+
+      setResult(enrichedResult);
       toast.success("Fact-check completed.");
     } catch (error: any) {
       console.error("Screenshot fact-check failed", error);
@@ -375,6 +403,26 @@ const ScreenshotFactChecker = () => {
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Why this verdict?</p>
             <p className="mt-2 text-sm leading-relaxed text-foreground/85">{result.explanation}</p>
           </div>
+
+          {result.forward_detected && (
+            <div className="mt-4 rounded-lg border border-trust-misinformation/30 bg-trust-misinformation/5 p-3">
+              <p className="text-sm font-bold text-trust-misinformation">🚨 Viral WhatsApp Forward Detected</p>
+              <p className="mt-2 text-sm text-foreground">
+                Similarity Match: {Math.round((result.similarity_score || 0) * 100)}%
+              </p>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pattern</p>
+              <ul className="mt-1 space-y-1 text-sm text-foreground/90">
+                <li>• {result.detected_pattern || "Known misinformation forward"}</li>
+                {(result.forward_signals || []).slice(0, 2).map((signal) => (
+                  <li key={signal}>• {signal}</li>
+                ))}
+              </ul>
+              <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recommendation</p>
+              <p className="mt-1 text-sm font-medium text-trust-misinformation">
+                {result.recommended_action || "Do not forward this message."}
+              </p>
+            </div>
+          )}
 
           <div className="mt-4 rounded-lg border border-border bg-card p-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sources used for verification</p>

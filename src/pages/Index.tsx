@@ -23,6 +23,18 @@ interface AnalysisResult {
   explanation: string;
 }
 
+interface ForwardDetectionResult {
+  forward_detected: boolean;
+  similarity_score: number;
+  risk_score: number;
+  forward_verdict: string;
+  detected_pattern: string;
+  message_type: string;
+  forward_explanation: string;
+  recommended_action: string;
+  forward_signals: string[];
+}
+
 const riskColors = {
   low: "bg-trust-verified/10 text-trust-verified border border-trust-verified/25",
   medium: "bg-trust-questionable/10 text-trust-questionable border border-trust-questionable/25",
@@ -94,6 +106,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [forwardDetection, setForwardDetection] = useState<ForwardDetectionResult | null>(null);
   const [inputMode, setInputMode] = useState<InputMode>("text");
   const [liveTopicIndex, setLiveTopicIndex] = useState(0);
 
@@ -112,13 +125,29 @@ const Index = () => {
     }
     setIsLoading(true);
     setResult(null);
+    setForwardDetection(null);
     try {
-      const { data, error } = await supabase.functions.invoke("analyze-news", {
-        body: { text: trimmed },
-      });
-      if (error) throw new Error(error.message || "Analysis failed");
-      if (data?.error) throw new Error(data.error);
-      setResult(data as AnalysisResult);
+      const [analysisRes, forwardRes] = await Promise.allSettled([
+        supabase.functions.invoke("analyze-news", {
+          body: { text: trimmed },
+        }),
+        supabase.functions.invoke("fact-check", {
+          body: { content: trimmed, language: "auto", type: "text" },
+        }),
+      ]);
+
+      if (analysisRes.status === "rejected") {
+        throw new Error("Analysis failed");
+      }
+
+      const analysisData = analysisRes.value;
+      if (analysisData.error) throw new Error(analysisData.error.message || "Analysis failed");
+      if (analysisData.data?.error) throw new Error(analysisData.data.error);
+      setResult(analysisData.data as AnalysisResult);
+
+      if (forwardRes.status === "fulfilled" && !forwardRes.value.error && forwardRes.value.data) {
+        setForwardDetection(forwardRes.value.data as ForwardDetectionResult);
+      }
     } catch (e: any) {
       console.error("Analysis error:", e);
       toast.error(e.message || "Failed to analyze. Please try again.");
@@ -289,6 +318,26 @@ const Index = () => {
             {result.explanation && (
               <div className="mt-6">
                 <ExplainableAI explanation={result.explanation} />
+              </div>
+            )}
+
+            {forwardDetection?.forward_detected && (
+              <div className="mt-6 rounded-xl border border-trust-misinformation/30 bg-trust-misinformation/5 p-4">
+                <h3 className="text-sm font-bold text-trust-misinformation">🚨 Viral WhatsApp Forward Detected</h3>
+                <p className="mt-2 text-sm text-foreground">
+                  Similarity Match: {Math.round((forwardDetection.similarity_score || 0) * 100)}%
+                </p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pattern</p>
+                <ul className="mt-1 space-y-1 text-sm text-foreground/90">
+                  <li>• {forwardDetection.detected_pattern || "Known misinformation forward"}</li>
+                  {(forwardDetection.forward_signals || []).slice(0, 2).map((signal) => (
+                    <li key={signal}>• {signal}</li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recommendation</p>
+                <p className="mt-1 text-sm font-medium text-trust-misinformation">
+                  {forwardDetection.recommended_action || "Do not forward this message."}
+                </p>
               </div>
             )}
           </div>
