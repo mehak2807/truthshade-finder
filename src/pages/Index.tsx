@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Flame, Home, Image, Loader2, Search, Scan, Type, Globe, ArrowRight } from "lucide-react";
+import { Flame, Home, Loader2, Search, Scan, Type, Globe, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +8,6 @@ import CredibilityGauge from "@/components/CredibilityGauge";
 import HeatmapDemo, { type Segment } from "@/components/HeatmapDemo";
 import AnalysisPanel, { type Finding } from "@/components/AnalysisPanel";
 import ExplainableAI from "@/components/ExplainableAI";
-import ImageUpload from "@/components/ImageUpload";
 import ScreenshotFactChecker from "@/components/ScreenshotFactChecker";
 import UrlInput from "@/components/UrlInput";
 import logo from "@/assets/trustvault-logo.png";
@@ -43,11 +42,11 @@ const riskColors = {
 
 const riskLabels = { low: "Low Risk", medium: "Medium Risk", high: "High Risk" };
 
-type InputMode = "text" | "image" | "url";
+type InputMode = "text" | "screenshot" | "url";
 
 const modeConfig = [
   { key: "text" as InputMode, icon: Type, label: "Text" },
-  { key: "image" as InputMode, icon: Image, label: "Image" },
+  { key: "screenshot" as InputMode, icon: Scan, label: "Screenshot" },
   { key: "url" as InputMode, icon: Globe, label: "URL" },
 ];
 
@@ -186,7 +185,7 @@ const Index = () => {
             Verify any claim,<br />instantly.
           </h1>
           <p className="mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Paste text, upload an image, or enter a URL — our AI analyzes credibility and flags misinformation.
+            Paste text, take a screenshot, or enter a URL — our AI analyzes credibility and flags misinformation.
           </p>
         </motion.div>
 
@@ -215,16 +214,9 @@ const Index = () => {
           </div>
 
           <div className="rounded-xl border border-border bg-card shadow-card">
-            {inputMode === "image" && (
-              <div className="p-4 pb-2">
-                <ImageUpload
-                  onTextExtracted={(text) => {
-                    setInputText(text);
-                    toast.success("Text extracted from image!");
-                  }}
-                  isExtracting={isExtracting}
-                  setIsExtracting={setIsExtracting}
-                />
+            {inputMode === "screenshot" && (
+              <div className="p-4">
+                <ScreenshotFactChecker />
               </div>
             )}
 
@@ -239,38 +231,36 @@ const Index = () => {
               />
             )}
 
-            <textarea
-              className="w-full bg-transparent resize-none p-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-h-[100px]"
-              placeholder={
-                inputMode === "image"
-                  ? "Extracted text will appear here..."
-                  : inputMode === "url"
-                  ? "Fetched content will appear here..."
-                  : "Paste a news article, claim, or social media post..."
-              }
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              disabled={isLoading || isExtracting}
-            />
-            <div className="flex items-center justify-end p-3 pt-0">
-              <button
-                onClick={handleAnalyze}
-                disabled={isLoading || isExtracting || !inputText.trim()}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>
-                ) : (
-                  <><Search className="w-4 h-4" /> Analyze</>
-                )}
-              </button>
-            </div>
+            {inputMode !== "screenshot" && (
+              <>
+                <textarea
+                  className="w-full bg-transparent resize-none p-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-h-[100px]"
+                  placeholder={
+                    inputMode === "url"
+                      ? "Fetched content will appear here..."
+                      : "Paste a news article, claim, or social media post..."
+                  }
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  disabled={isLoading || isExtracting}
+                />
+                <div className="flex items-center justify-end p-3 pt-0">
+                  <button
+                    onClick={handleAnalyze}
+                    disabled={isLoading || isExtracting || !inputText.trim()}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>
+                    ) : (
+                      <><Search className="w-4 h-4" /> Analyze</>
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </motion.div>
-      </section>
-
-      <section className="container max-w-5xl mx-auto px-4 pb-8">
-        <ScreenshotFactChecker />
       </section>
 
       {/* Results */}
