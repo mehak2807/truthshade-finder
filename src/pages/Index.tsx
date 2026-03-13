@@ -95,10 +95,10 @@ const Index = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl sm:text-4xl font-bold leading-tight tracking-tight text-foreground">
+          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-foreground">
             Verify any claim,<br />instantly.
           </h1>
-          <p className="mt-3 text-base text-muted-foreground leading-relaxed">
+          <p className="mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed">
             Paste text, upload an image, or enter a URL — our AI analyzes credibility and flags misinformation.
           </p>
         </motion.div>
