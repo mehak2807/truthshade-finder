@@ -72,12 +72,18 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
-      <nav className="border-b border-border sticky top-0 z-50 bg-background/90 backdrop-blur-sm">
-        <div className="container max-w-5xl mx-auto flex items-center justify-between h-14 px-4">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-primary" />
-            <span className="text-base font-semibold font-['Space_Grotesk'] tracking-tight text-foreground">TrustVault</span>
+      <nav className="border-b border-border sticky top-0 z-50 bg-background/90 backdrop-blur-md">
+        <div className="container max-w-5xl mx-auto flex items-center justify-between h-16 px-4">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate("/")}>
+            <img src={logo} alt="TrustVault" className="w-8 h-8 rounded-lg object-cover" />
+            <span className="text-lg font-bold font-['Space_Grotesk'] tracking-tight text-foreground">TrustVault</span>
           </div>
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Home className="w-4 h-4" /> Home
+          </button>
         </div>
       </nav>
 
