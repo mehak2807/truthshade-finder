@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, Search, Scan, Loader2, Image, Type, Globe, ArrowRight } from "lucide-react";
+import { ShieldCheck, Search, Scan, Loader2, Image, Type, Globe, ArrowRight, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import CredibilityGauge from "@/components/CredibilityGauge";
@@ -9,6 +10,7 @@ import AnalysisPanel, { type Finding } from "@/components/AnalysisPanel";
 import ExplainableAI from "@/components/ExplainableAI";
 import ImageUpload from "@/components/ImageUpload";
 import UrlInput from "@/components/UrlInput";
+import logo from "@/assets/trustvault-logo.png";
 
 interface AnalysisResult {
   overall_score: number;
