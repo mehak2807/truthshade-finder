@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, Search, Scan, Loader2, Image, Type, Globe, ArrowRight, Home } from "lucide-react";
+import { Flame, Home, Image, Loader2, Search, Scan, Type, Globe, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import HeatmapDemo, { type Segment } from "@/components/HeatmapDemo";
 import AnalysisPanel, { type Finding } from "@/components/AnalysisPanel";
 import ExplainableAI from "@/components/ExplainableAI";
 import ImageUpload from "@/components/ImageUpload";
+import ScreenshotFactChecker from "@/components/ScreenshotFactChecker";
 import UrlInput from "@/components/UrlInput";
 import logo from "@/assets/trustvault-logo.png";
 
@@ -38,6 +39,55 @@ const modeConfig = [
   { key: "url" as InputMode, icon: Globe, label: "URL" },
 ];
 
+const hotTopics = [
+  {
+    title: "LPG Cylinder Shortage: Panic over cooking gas supply disruptions across India",
+    image:
+      "https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&fit=crop&w=640&q=80",
+    source: "India Energy Watch",
+    risk: "High",
+  },
+  {
+    title: "India LPG Crisis: Black marketing reports in Delhi and Bengaluru while government denies major shortage",
+    image:
+      "https://images.unsplash.com/photo-1605152276897-4f618f831968?auto=format&fit=crop&w=640&q=80",
+    source: "Metro Policy Desk",
+    risk: "High",
+  },
+  {
+    title: "US-Israel-Iran tensions escalate, oil crosses $100 and fuel supply fears rise",
+    image:
+      "https://images.unsplash.com/photo-1575320181282-9afab399332c?auto=format&fit=crop&w=640&q=80",
+    source: "Global Conflict Monitor",
+    risk: "High",
+    faces: [
+      "https://upload.wikimedia.org/wikipedia/commons/5/56/Donald_Trump_official_portrait.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/2/26/Seyyed_Ali_Khamenei.jpg",
+    ],
+  },
+  {
+    title: "Middle East conflict pressure: PM-level India-Iran talks and impact on LPG and economy",
+    image:
+      "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=640&q=80",
+    source: "Diplomacy Brief",
+    risk: "Medium",
+  },
+  {
+    title: "IPL 2026 Schedule: Phase 1 announced, RCB vs SRH opener on March 28",
+    image:
+      "https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=640&q=80",
+    source: "Sports Pulse",
+    risk: "Medium",
+  },
+  {
+    title: "Inflation update: CPI at 10-month high, RBI rates and fuel stress hit cost of living",
+    image:
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=640&q=80",
+    source: "Economic Tracker",
+    risk: "Medium",
+  },
+];
+
 const Index = () => {
   const navigate = useNavigate();
   const [inputText, setInputText] = useState("");
@@ -45,6 +95,14 @@ const Index = () => {
   const [isExtracting, setIsExtracting] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [inputMode, setInputMode] = useState<InputMode>("text");
+  const [liveTopicIndex, setLiveTopicIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLiveTopicIndex((prev) => (prev + 1) % hotTopics.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleAnalyze = async () => {
     const trimmed = inputText.trim();
@@ -182,6 +240,10 @@ const Index = () => {
         </motion.div>
       </section>
 
+      <section className="container max-w-5xl mx-auto px-4 pb-8">
+        <ScreenshotFactChecker />
+      </section>
+
       {/* Results */}
       {result && (
         <motion.section
@@ -257,6 +319,85 @@ const Index = () => {
               </motion.div>
             ))}
           </div>
+
+          <motion.div
+            className="mt-8 rounded-2xl border border-border bg-card/95 p-4 shadow-card sm:p-5"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.2 }}
+          >
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                  <Flame className="h-3.5 w-3.5" />
+                  Live Hot Topics
+                </p>
+                <h3 className="mt-2 text-lg font-bold tracking-tight text-foreground">Trending Claims Being Verified Right Now</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Tracking: <span className="font-semibold text-foreground">{hotTopics[liveTopicIndex].title}</span>
+              </p>
+            </div>
+
+            <div className="topics-marquee overflow-hidden rounded-xl border border-border/80 bg-background/70">
+              <div className="topics-track flex w-max gap-3 p-3">
+                {[...hotTopics, ...hotTopics].map((topic, index) => (
+                  <article
+                    key={`${topic.title}-${index}`}
+                    className="w-[260px] shrink-0 rounded-xl border border-border bg-card p-2 shadow-card"
+                  >
+                    <img
+                      src={topic.image}
+                      alt={topic.title}
+                      className="h-28 w-full rounded-lg object-cover"
+                      loading="lazy"
+                    />
+                    <div className="px-1 pb-1 pt-3">
+                      <p className="text-xs font-semibold leading-snug text-foreground">{topic.title}</p>
+                      <div className="mt-2 flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">{topic.source}</span>
+                        <span
+                          className={`rounded-full px-2 py-0.5 font-semibold ${
+                            topic.risk === "High"
+                              ? "bg-trust-misinformation/10 text-trust-misinformation"
+                              : "bg-trust-questionable/10 text-trust-questionable"
+                          }`}
+                        >
+                          {topic.risk} Risk
+                        </span>
+                      </div>
+                      {topic.faces && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <img
+                            src={topic.faces[0]}
+                            alt="Donald Trump"
+                            className="h-6 w-6 rounded-full border border-white object-cover shadow-sm"
+                            loading="lazy"
+                          />
+                          <img
+                            src={topic.faces[1]}
+                            alt="Ali Khamenei"
+                            className="-ml-3 h-6 w-6 rounded-full border border-white object-cover shadow-sm"
+                            loading="lazy"
+                          />
+                          <span className="text-[10px] font-medium text-muted-foreground">Trump vs Khamenei</span>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          setInputMode("text");
+                          setInputText(topic.title);
+                        }}
+                        className="mt-3 w-full rounded-lg border border-border px-2 py-1.5 text-[11px] font-semibold text-foreground transition-colors hover:bg-muted"
+                      >
+                        Verify This Topic
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         </section>
       )}
     </div>

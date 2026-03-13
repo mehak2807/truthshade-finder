@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.ocr-extract]
 verify_jwt = false
+
+[functions.screenshot-fact-check]
+verify_jwt = false
