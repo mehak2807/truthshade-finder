@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, Search, Scan, Loader2, Image, Type, Globe, ArrowRight } from "lucide-react";
+import { ShieldCheck, Search, Scan, Loader2, Image, Type, Globe, ArrowRight, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import CredibilityGauge from "@/components/CredibilityGauge";
@@ -9,6 +10,7 @@ import AnalysisPanel, { type Finding } from "@/components/AnalysisPanel";
 import ExplainableAI from "@/components/ExplainableAI";
 import ImageUpload from "@/components/ImageUpload";
 import UrlInput from "@/components/UrlInput";
+import logo from "@/assets/trustvault-logo.png";
 
 interface AnalysisResult {
   overall_score: number;
@@ -37,6 +39,7 @@ const modeConfig = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -69,12 +72,18 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
-      <nav className="border-b border-border sticky top-0 z-50 bg-background/90 backdrop-blur-sm">
-        <div className="container max-w-5xl mx-auto flex items-center justify-between h-14 px-4">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-primary" />
-            <span className="text-base font-semibold font-['Space_Grotesk'] tracking-tight text-foreground">TrustVault</span>
+      <nav className="border-b border-border sticky top-0 z-50 bg-background/90 backdrop-blur-md">
+        <div className="container max-w-5xl mx-auto flex items-center justify-between h-16 px-4">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate("/")}>
+            <img src={logo} alt="TrustVault" className="w-8 h-8 rounded-lg object-cover" />
+            <span className="text-lg font-bold font-['Space_Grotesk'] tracking-tight text-foreground">TrustVault</span>
           </div>
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Home className="w-4 h-4" /> Home
+          </button>
         </div>
       </nav>
 
@@ -86,10 +95,10 @@ const Index = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl sm:text-4xl font-bold leading-tight tracking-tight text-foreground">
+          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-foreground">
             Verify any claim,<br />instantly.
           </h1>
-          <p className="mt-3 text-base text-muted-foreground leading-relaxed">
+          <p className="mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed">
             Paste text, upload an image, or enter a URL — our AI analyzes credibility and flags misinformation.
           </p>
         </motion.div>
