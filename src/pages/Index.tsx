@@ -11,6 +11,7 @@ import ExplainableAI from "@/components/ExplainableAI";
 import ScreenshotFactChecker from "@/components/ScreenshotFactChecker";
 import UrlInput from "@/components/UrlInput";
 import VoiceInput from "@/components/VoiceInput";
+import ReportToCyberPolice from "@/components/ReportToCyberPolice";
 import logo from "@/assets/trustvault-logo.png";
 
 interface AnalysisResult {
@@ -340,6 +341,10 @@ const Index = () => {
                   {forwardDetection.recommended_action || "Do not forward this message."}
                 </p>
               </div>
+            )}
+
+            {result.overall_score < 50 && (
+              <ReportToCyberPolice score={result.overall_score} contentToReport={inputText} />
             )}
           </div>
         </motion.section>
