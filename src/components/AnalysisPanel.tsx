@@ -12,15 +12,15 @@ interface AnalysisPanelProps {
 }
 
 const iconMap = {
-  verified: <Shield className="w-5 h-5" />,
-  questionable: <AlertTriangle className="w-5 h-5" />,
-  misinformation: <XOctagon className="w-5 h-5" />,
+  verified: <Shield className="w-4 h-4" />,
+  questionable: <AlertTriangle className="w-4 h-4" />,
+  misinformation: <XOctagon className="w-4 h-4" />,
 };
 
 const typeStyles = {
-  verified: "border-trust-verified/30 bg-trust-verified/5",
-  questionable: "border-trust-questionable/30 bg-trust-questionable/5",
-  misinformation: "border-trust-misinformation/30 bg-trust-misinformation/5",
+  verified: "border-trust-verified/20 bg-trust-verified/5",
+  questionable: "border-trust-questionable/20 bg-trust-questionable/5",
+  misinformation: "border-trust-misinformation/20 bg-trust-misinformation/5",
 };
 
 const iconColors = {
@@ -31,20 +31,20 @@ const iconColors = {
 
 const AnalysisPanel = ({ findings }: AnalysisPanelProps) => {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {findings.map((finding, i) => (
         <motion.div
           key={i}
-          className={`border rounded-lg p-4 ${typeStyles[finding.type]}`}
-          initial={{ opacity: 0, x: 20 }}
+          className={`border rounded-lg p-3.5 ${typeStyles[finding.type]}`}
+          initial={{ opacity: 0, x: 12 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 * i, duration: 0.5 }}
+          transition={{ delay: 0.15 * i, duration: 0.4 }}
         >
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-2.5">
             <span className={`mt-0.5 ${iconColors[finding.type]}`}>{iconMap[finding.type]}</span>
             <div>
               <h4 className="font-semibold text-sm text-foreground">{finding.title}</h4>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{finding.description}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{finding.description}</p>
             </div>
           </div>
         </motion.div>
