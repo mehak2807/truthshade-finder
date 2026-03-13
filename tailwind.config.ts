@@ -51,7 +51,6 @@ export default {
           verified: "hsl(var(--trust-verified))",
           questionable: "hsl(var(--trust-questionable))",
           misinformation: "hsl(var(--trust-misinformation))",
-          glow: "hsl(var(--trust-glow))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
