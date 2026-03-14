@@ -5,6 +5,7 @@ export interface Finding {
   title: string;
   description: string;
   type: "verified" | "questionable" | "misinformation";
+  evidence_strength?: "strong" | "medium" | "weak" | "none";
 }
 
 interface AnalysisPanelProps {

@@ -13,6 +13,7 @@ import UrlInput from "@/components/UrlInput";
 import VoiceInput from "@/components/VoiceInput";
 import ReportToCyberPolice from "@/components/ReportToCyberPolice";
 import logo from "@/assets/trustvault-logo.png";
+import { getVerificationStatus } from "@/lib/verificationHelpers";
 
 interface AnalysisResult {
   overall_score: number;
@@ -43,14 +44,6 @@ const riskColors = {
 };
 
 const riskLabels = { low: "Low Risk", medium: "Medium Risk", high: "High Risk" };
-
-/** Threshold chips (Option 3) */
-function getScoreChip(score: number): { label: string; className: string } {
-  if (score < 25) return { label: "Red", className: "bg-red-500/10 text-red-600 border border-red-500/30" };
-  if (score < 50) return { label: "Unreliable", className: "bg-orange-500/10 text-orange-600 border border-orange-500/30" };
-  if (score < 75) return { label: "Caution", className: "bg-yellow-500/10 text-yellow-700 border border-yellow-500/30" };
-  return { label: "Verified", className: "bg-trust-verified/10 text-trust-verified border border-trust-verified/25" };
-}
 
 type InputMode = "text" | "screenshot" | "url" | "voice";
 
@@ -373,9 +366,9 @@ const Index = () => {
                 {/* Results header */}
                 <div className="flex flex-wrap items-center gap-2 mb-6">
                   <h2 className="text-xl font-bold tracking-tight text-foreground">Results</h2>
-                  {/* Threshold chip (Option 3) */}
+                  {/* Evidence-aware status chip */}
                   {(() => {
-                    const chip = getScoreChip(result.overall_score);
+                    const chip = getVerificationStatus(result);
                     return (
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${chip.className}`}>
                         {chip.label}

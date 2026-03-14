@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 export interface Segment {
   text: string;
   level: "verified" | "questionable" | "misinformation";
+  evidence_strength?: "strong" | "medium" | "weak" | "none";
 }
 
 interface HeatmapDemoProps {
