@@ -17,6 +17,12 @@ import { type LanguageCode } from "@/config/languages";
 import logo from "@/assets/trustvault-logo.png";
 import { getVerificationStatus } from "@/lib/verificationHelpers";
 
+interface Sentiment {
+  sentiment: "positive" | "neutral" | "negative";
+  emotional_intensity: "low" | "medium" | "high";
+  explanation: string;
+}
+
 interface AnalysisResult {
   overall_score: number;
   source_score: number;
@@ -25,6 +31,7 @@ interface AnalysisResult {
   segments: Segment[];
   findings: Finding[];
   explanation: string;
+  sentiment?: Sentiment;
 }
 
 interface ForwardDetectionResult {
@@ -459,6 +466,82 @@ const Index = () => {
                     transition={{ delay: 0.3, duration: 0.4 }}
                   >
                     <ExplainableAI explanation={result.explanation} />
+                  </motion.div>
+                )}
+
+                {result.sentiment && (
+                  <motion.div
+                    className="mt-5 rounded-2xl border border-border/70 bg-white/90 p-5 shadow-elevated backdrop-blur-sm"
+                    initial={prefersReducedMotion ? {} : { opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.32, duration: 0.4 }}
+                  >
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                      Sentiment Analysis
+                    </h3>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {(["positive", "neutral", "negative"] as const).map((s) => {
+                        const isActive = result.sentiment!.sentiment === s;
+                        const styles = {
+                          positive: isActive
+                            ? "bg-trust-verified/15 text-trust-verified border-trust-verified/40"
+                            : "bg-muted/60 text-muted-foreground border-border",
+                          neutral: isActive
+                            ? "bg-trust-questionable/15 text-trust-questionable border-trust-questionable/40"
+                            : "bg-muted/60 text-muted-foreground border-border",
+                          negative: isActive
+                            ? "bg-trust-misinformation/15 text-trust-misinformation border-trust-misinformation/40"
+                            : "bg-muted/60 text-muted-foreground border-border",
+                        };
+                        const labels = {
+                          positive: "🟢 Positive",
+                          neutral: "🟡 Neutral",
+                          negative: "🔴 Negative",
+                        };
+                        return (
+                          <span
+                            key={s}
+                            className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${styles[s]}`}
+                          >
+                            {labels[s]}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <div className="mb-3">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                        Emotion Intensity
+                      </p>
+                      <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                        <motion.div
+                          className={`h-full rounded-full ${
+                            result.sentiment.sentiment === "positive"
+                              ? "bg-trust-verified"
+                              : result.sentiment.sentiment === "negative"
+                              ? "bg-trust-misinformation"
+                              : "bg-trust-questionable"
+                          }`}
+                          initial={{ width: 0 }}
+                          animate={{
+                            width:
+                              result.sentiment.emotional_intensity === "high"
+                                ? "80%"
+                                : result.sentiment.emotional_intensity === "medium"
+                                ? "50%"
+                                : "25%",
+                          }}
+                          transition={{ duration: 0.6, ease: "easeOut" }}
+                        />
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground capitalize">
+                        {result.sentiment.emotional_intensity} intensity
+                      </p>
+                    </div>
+                    {result.sentiment.explanation && (
+                      <p className="text-xs text-muted-foreground leading-relaxed italic">
+                        {result.sentiment.explanation}
+                      </p>
+                    )}
                   </motion.div>
                 )}
 

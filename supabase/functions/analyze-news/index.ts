@@ -35,6 +35,12 @@ export interface Finding {
   evidence_strength: EvidenceStrength;
 }
 
+export interface Sentiment {
+  sentiment: "positive" | "neutral" | "negative";
+  emotional_intensity: "low" | "medium" | "high";
+  explanation: string;
+}
+
 export interface AnalysisReport {
   schema_version: number;
   overall_score: number;
@@ -44,6 +50,7 @@ export interface AnalysisReport {
   segments: Segment[];
   findings: Finding[];
   explanation: string;
+  sentiment: Sentiment;
 }
 
 /** Evidence levels that permit the "verified" label. */
@@ -392,6 +399,28 @@ serve(async (req) => {
                       description:
                         "A detailed, human-readable explanation of the AI's reasoning process, red flags found, manipulation techniques detected, and advice for the reader.",
                     },
+                    sentiment: {
+                      type: "object",
+                      description: "Sentiment analysis of the article or content.",
+                      properties: {
+                        sentiment: {
+                          type: "string",
+                          enum: ["positive", "neutral", "negative"],
+                          description: "Overall sentiment of the content.",
+                        },
+                        emotional_intensity: {
+                          type: "string",
+                          enum: ["low", "medium", "high"],
+                          description: "Intensity of the emotional tone.",
+                        },
+                        explanation: {
+                          type: "string",
+                          description: "Brief explanation of the detected sentiment and emotional tone.",
+                        },
+                      },
+                      required: ["sentiment", "emotional_intensity", "explanation"],
+                      additionalProperties: false,
+                    },
                   },
                   required: [
                     "overall_score",
@@ -401,6 +430,7 @@ serve(async (req) => {
                     "segments",
                     "findings",
                     "explanation",
+                    "sentiment",
                   ],
                   additionalProperties: false,
                 },
