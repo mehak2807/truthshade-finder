@@ -19,6 +19,13 @@ const forwardAlert = document.getElementById("forwardAlert");
 const forwardSimilarity = document.getElementById("forwardSimilarity");
 const forwardPatterns = document.getElementById("forwardPatterns");
 const forwardRecommendation = document.getElementById("forwardRecommendation");
+const sentimentSection = document.getElementById("sentimentSection");
+const sentimentPositive = document.getElementById("sentimentPositive");
+const sentimentNeutral = document.getElementById("sentimentNeutral");
+const sentimentNegative = document.getElementById("sentimentNegative");
+const intensityBar = document.getElementById("intensityBar");
+const intensityPercent = document.getElementById("intensityPercent");
+const sentimentExplanation = document.getElementById("sentimentExplanation");
 
 let imageData = "";
 
@@ -155,6 +162,26 @@ function renderResult(result) {
 
     forwardRecommendation.textContent =
       result.recommended_action || "Do not forward this message.";
+  }
+
+  const sentiment = result.sentiment;
+  if (sentiment && typeof sentiment === "object") {
+    sentimentSection.hidden = false;
+
+    sentimentPositive.classList.toggle("active", sentiment.sentiment === "positive");
+    sentimentNeutral.classList.toggle("active", sentiment.sentiment === "neutral");
+    sentimentNegative.classList.toggle("active", sentiment.sentiment === "negative");
+
+    // Percentage thresholds represent subjective UX ranges: low=30%, medium=60%, high=80%
+    const intensityMap = { low: 30, medium: 60, high: 80 };
+    const pct = intensityMap[sentiment.emotional_intensity] ?? 30;
+    intensityBar.style.width = `${pct}%`;
+    intensityBar.dataset.intensity = sentiment.emotional_intensity || "low";
+    intensityPercent.textContent = `${pct}%`;
+
+    sentimentExplanation.textContent = sentiment.explanation || "";
+  } else {
+    sentimentSection.hidden = true;
   }
 }
 
