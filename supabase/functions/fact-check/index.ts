@@ -356,6 +356,62 @@ const detectKnownForward = async (apiKey: string, englishInput: string) => {
   };
 };
 
+type SentimentResult = {
+  sentiment: "positive" | "negative" | "neutral";
+  sentiment_score: number;
+  emotional_intensity: "low" | "medium" | "high";
+  explanation: string;
+};
+
+const sentimentFallback: SentimentResult = {
+  sentiment: "neutral",
+  sentiment_score: 0,
+  emotional_intensity: "low",
+  explanation: "Sentiment analysis unavailable.",
+};
+
+const analyzeSentiment = async (apiKey: string, text: string): Promise<SentimentResult> => {
+  try {
+    const data = await callAi(apiKey, {
+      model: "google/gemini-2.5-flash",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a sentiment analysis expert. Analyze news text and return a JSON object with exactly these fields: sentiment (positive/negative/neutral), sentiment_score (number from -1 to 1), emotional_intensity (low/medium/high), explanation (one sentence). Return only valid JSON, no markdown.",
+        },
+        {
+          role: "user",
+          content: `Analyze the sentiment of the following news text.\n\nReturn:\n1. sentiment (positive / negative / neutral)\n2. sentiment_score (-1 to 1)\n3. emotional_intensity (low / medium / high)\n4. explanation\n\nText:\n${text.slice(0, 4000)}`,
+        },
+      ],
+    });
+
+    const raw = String(data.choices?.[0]?.message?.content || "").trim();
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return sentimentFallback;
+
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    const sentiment = ["positive", "negative", "neutral"].includes(parsed.sentiment)
+      ? (parsed.sentiment as SentimentResult["sentiment"])
+      : "neutral";
+    const sentiment_score = typeof parsed.sentiment_score === "number"
+      ? Math.max(-1, Math.min(1, parsed.sentiment_score))
+      : 0;
+    const emotional_intensity = ["low", "medium", "high"].includes(parsed.emotional_intensity)
+      ? (parsed.emotional_intensity as SentimentResult["emotional_intensity"])
+      : "low";
+    const explanation = typeof parsed.explanation === "string" && parsed.explanation.trim()
+      ? parsed.explanation.trim()
+      : "Sentiment analysis unavailable.";
+
+    return { sentiment, sentiment_score, emotional_intensity, explanation };
+  } catch {
+    return sentimentFallback;
+  }
+};
+
 const mapVerdictToScore = (verdict: InternalVerdict): number => {
   if (verdict === "True") return 85;
   if (verdict === "Misleading") return 45;
@@ -737,6 +793,9 @@ serve(async (req) => {
         ? forwardMatch.recommended_action
         : await translateText(apiKey, forwardMatch.recommended_action, "en", outputLanguage);
 
+    const sentimentText = type === "screenshot" ? textContent : englishInput;
+    const sentiment = await analyzeSentiment(apiKey, sentimentText);
+
     return new Response(
       JSON.stringify({
         credibility_score: credibilityScore,
@@ -761,6 +820,7 @@ serve(async (req) => {
         forward_signals: forwardMatch.suspicious_signals,
         forward_fact_check_sources: forwardMatch.fact_check_sources,
         fingerprint: forwardMatch.fingerprint,
+        sentiment,
         viral_forward_output: {
           forward_detected: forwardMatch.forward_detected,
           similarity_score: forwardMatch.similarity_score,
