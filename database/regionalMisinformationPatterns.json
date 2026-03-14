@@ -1,0 +1,534 @@
+{
+  "regionalTemplates": [
+    {
+      "id": "REGIONAL_HI_001",
+      "language": "hi",
+      "languageName": "Hindi",
+      "title": "नकली सरकारी योजना (हिंदी)",
+      "category": "financial_fraud",
+      "keywords": [
+        "सरकार",
+        "योजना",
+        "पैसा",
+        "खाता",
+        "रुपये",
+        "तुरंत",
+        "आवेदन",
+        "फॉर्म"
+      ],
+      "patterns": [
+        "सरकार ने घोषणा की है",
+        "आपके खाते में पैसा मिलेगा",
+        "शेयर करें और पैसा जीतें",
+        "यह संदेश सभी को भेजें"
+      ],
+      "riskIndicators": [
+        "tense_urgency",
+        "promise_reward",
+        "forward_request"
+      ],
+      "verdict": "likely_false",
+      "factCheckSources": [
+        "PIB Fact Check",
+        "Alt News",
+        "Boom Live",
+        "Factly"
+      ],
+      "explanation": "सरकारी योजनाएं आधिकारिक वेबसाइटों के माध्यम से घोषित की जाती हैं, व्हाट्सएप के माध्यम से नहीं।"
+    },
+    {
+      "id": "REGIONAL_TA_001",
+      "language": "ta",
+      "languageName": "Tamil",
+      "title": "தவறான வங்கி எச்சரிக்கை",
+      "category": "banking_phishing",
+      "keywords": [
+        "வங்கி",
+        "கணக்கு",
+        "பணம்",
+        "சரிபார்க்க",
+        "அமைப்பு",
+        "இணைப்பு",
+        "உடனடி"
+      ],
+      "patterns": [
+        "உங்கள் கணக்கு சரிபார்க்க வேண்டும்",
+        "இந்த இணைப்பைக் கிளிக் செய்யவும்",
+        "உடனடியாக நடவடிக்கை எடுக்கவும்"
+      ],
+      "riskIndicators": [
+        "phishing_link",
+        "urgent_action",
+        "account_threat"
+      ],
+      "verdict": "likely_false",
+      "factCheckSources": [
+        "RBI Alerts",
+        "Cyber Dost",
+        "Alt News"
+      ],
+      "explanation": "கலங்கரை விளக்கு உங்கள் கணக்கு விவரங்களை ஒருபோதும் SMS மூலம் கேட்க மாட்டேன்."
+    },
+    {
+      "id": "REGIONAL_TE_001",
+      "language": "te",
+      "languageName": "Telugu",
+      "title": "తప్పుడు ఉద్యోగ భర్తీ",
+      "category": "fake_job",
+      "keywords": [
+        "ఉద్యోగం",
+        "జీతం",
+        "హోమ్ వర్క్",
+        "దరఖాస్తు",
+        "సరిపొతన",
+        "సంస్థ"
+      ],
+      "patterns": [
+        "పరీక్ష లేకుండా ఉద్యోగం",
+        "ఎక్కువ జీతం",
+        "ఇంటి నుండి పని చేయండి",
+        "నqualify కాని వారికి"
+      ],
+      "riskIndicators": [
+        "no_exam",
+        "high_salary",
+        "easy_work"
+      ],
+      "verdict": "likely_false",
+      "factCheckSources": [
+        "PIB Fact Check",
+        "Alt News",
+        "Factly"
+      ],
+      "explanation": "నిందితమైన కంపెనీలు ఎటువంటి పరీక్ష లేకుండా ఎక్కువ జీతం ఆఫర్ చేయవు."
+    },
+    {
+      "id": "REGIONAL_BN_001",
+      "language": "bn",
+      "languageName": "Bengali",
+      "title": "জাল স্বাস্থ্য নিরাপত্তা",
+      "category": "health_fraud",
+      "keywords": [
+        "ওষুধ",
+        "রোগ",
+        "চিকিৎসক",
+        "সুস্থ",
+        "ঔষধ",
+        "সুস্বাস্থ্য",
+        "নিরাপদ"
+      ],
+      "patterns": [
+        "তিন দিনে সারা হবে",
+        "ডাক্তাররা সুপারিশ করেন",
+        "সম্পূর্ণ নিরাপদ এবং প্রাকৃতিক",
+        "ফার্মাসি এটি লুকায়"
+      ],
+      "riskIndicators": [
+        "miracle_cure",
+        "fake_endorsement",
+        "conspiracy"
+      ],
+      "verdict": "likely_false",
+      "factCheckSources": [
+        "WHO",
+        "PIB Fact Check",
+        "Alt News"
+      ],
+      "explanation": "কোনো ঐতিহাসিক রোগের তাৎক্ষণিক নিরাপত্তা নেই। সর্বদা সার্টিফাইড ডাক্তারের সাথে পরামর্শ করুন।"
+    },
+    {
+      "id": "REGIONAL_MR_001",
+      "language": "mr",
+      "languageName": "Marathi",
+      "title": "तरतूद भीती अफवा",
+      "category": "panic_rumor",
+      "keywords": [
+        "मंडई",
+        "कर्फ्यू",
+        "बंद",
+        "धोक्यात",
+        "तरतूद",
+        "शेअर",
+        "साचे"
+      ],
+      "patterns": [
+        "शहरात कर्फ्यू लागू होईल",
+        "सर्व दुकाने बंद होतील",
+        "हे संदेश सर्वांना पाठवा",
+        "व्यक्त असली बातमी"
+      ],
+      "riskIndicators": [
+        "panic_claim",
+        "forward_request",
+        "false_urgency"
+      ],
+      "verdict": "likely_false",
+      "factCheckSources": [
+        "PIB Fact Check",
+        "Factly",
+        "Alt News"
+      ],
+      "explanation": "अधिकृत स्रोताकडून अशी घोषणा नाहीत. व्हाट्सएप अफवांवर विश्वास करू नका."
+    },
+    {
+      "id": "REGIONAL_GU_001",
+      "language": "gu",
+      "languageName": "Gujarati",
+      "title": "ખોટી બિજલી બીલ",
+      "category": "utility_fraud",
+      "keywords": [
+        "બીલ",
+        "ખર્ચ",
+        "ભાડું",
+        "પેમેન્ટ",
+        "બકાયો",
+        "વીજળી",
+        "ગેસ"
+      ],
+      "patterns": [
+        "તમારું બીલ બમણું થઈ ગયું",
+        "તાત્કાલીક ચુકવણી કરો",
+        "આ લિંક પર ક્લિક કરો",
+        "ખાતો બંધ થશે"
+      ],
+      "riskIndicators": [
+        "phishing_link",
+        "account_threat",
+        "false_bill"
+      ],
+      "verdict": "likely_false",
+      "factCheckSources": [
+        "વીજળી બોર્ડ",
+        "Cyber Dost",
+        "Alt News"
+      ],
+      "explanation": "અધિકૃત જાણકારી માત્ર સત્તાવાર વેબસાઇટ અને અધિકૃત સંપર્કો માટે ઉપલબ્ધ છે."
+    },
+    {
+      "id": "REGIONAL_KN_001",
+      "language": "kn",
+      "languageName": "Kannada",
+      "title": "ಬೆಂಕಿ ಪರೀಕ್ಷೆ",
+      "category": "recruitment_fraud",
+      "keywords": [
+        "ನೌಕರಿ",
+        "ಪರೀಕ್ಷೆ",
+        "ನಿಯೋಜನೆ",
+        "ಅರ್ಜಿ",
+        "ನೇತೃತ್ವ",
+        "ಪ್ರಮಾಣ"
+      ],
+      "patterns": [
+        "ರೈಲು ಪರೀಕ್ಷೆ ಸುಳ್ಳು",
+        "ಯಾದೃಚ್ಛಿಕ ನೇತೃತ್ವ",
+        "ಸಾಲ ಅಪರಾಧ",
+        "ಅರ್ಜಿ ಶುಲ್ಕ"
+      ],
+      "riskIndicators": [
+        "application_fee",
+        "fake_recruitment",
+        "credential_scam"
+      ],
+      "verdict": "likely_false",
+      "factCheckSources": [
+        "RRB ಅಧಿಕೃತ",
+        "PIB Fact Check",
+        "Alt News"
+      ],
+      "explanation": "ಭಾರತೀಯ ರೈಲ್ವೆ ಯಾವುದೇ ಸಾಲ ಮಾಹಿತಿ ವಿತರಣ ಮಾಡುವುದಿಲ್ಲ."
+    },
+    {
+      "id": "REGIONAL_ML_001",
+      "language": "ml",
+      "languageName": "Malayalam",
+      "title": "തെറ്റായ സംസ്ഥാന സഹായം",
+      "category": "relief_fraud",
+      "keywords": [
+        "സാധാരണ",
+        "സഹായം",
+        "പണം",
+        "അനുമതി",
+        "സാഹചര്യം",
+        "പെൻഷൻ",
+        "വിതരണം"
+      ],
+      "patterns": [
+        "സാഹചര്യ സഹായം തുറന്നിരിക്കുന്നു",
+        "അക്കൗണ്ട് നം കത്തിക്കൂടാൻ",
+        "ഫോം പൂരിപ്പിക്കുക",
+        "എല്ലാവരെയും പങ്കുവെക്കുക"
+      ],
+      "riskIndicators": [
+        "government_benefit",
+        "forward_request",
+        "account_ask"
+      ],
+      "verdict": "likely_false",
+      "factCheckSources": [
+        "സർക്കാർ വെബ്സൈറ്റ്",
+        "Alt News",
+        "Factly"
+      ],
+      "explanation": "സാഹചര്യ സഹായം വിതരണം സാധാരണ ബാങ്ക് സംവിധാനങ്ങൾ വഴിയാണ്, അന്താരാഷ്ട്ര സന്ദേശങ്ങളിലൂടെ അല്ല."
+    },
+    {
+      "id": "REGIONAL_PA_001",
+      "language": "pa",
+      "languageName": "Punjabi",
+      "title": "ਨਕਲੀ ਯੋਗਦਾਨ ਨਨ੍ਹਾ",
+      "category": "agricultural_fraud",
+      "keywords": [
+        "ਫਸਲ",
+        "ਨਨ੍ਹਾ",
+        "ਯੋਗਦਾਨ",
+        "ਸਬਸਿਡੀ",
+        "ਮਿੰਹ",
+        "ਤੇਲ",
+        "ਰੀਿਆ"
+      ],
+      "patterns": [
+        "ਫਸਲ ਯੋਗਦਾਨ ਵਿਚ ਬਦਲਾਅ",
+        "ਨਵੀਂ ਸਬਸਿਡੀ ਯੋਗਨਾ",
+        "ਇਹ ਸੰਬਾਦ ਸਾਰਿਆਂ ਕੋ ਭੇਜੋ"
+      ],
+      "riskIndicators": [
+        "agricultural_scheme",
+        "subsidy_fraud",
+        "forward_request"
+      ],
+      "verdict": "likely_false",
+      "factCheckSources": [
+        "ਕਿਸਾਨ ਪਮਾਣ",
+        "PIB Fact Check",
+        "Alt News"
+      ],
+      "explanation": "ਸਭ ਰਾਜ ਯੋਜਨਾਵਾਂ ਅਫਸਰ ਵੈਬਸਾਇਟ ਤੇ ਜਾਰੀ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।"
+    }
+  ],
+  "regionalPatterns": {
+    "urgencyKeywords": {
+      "hi": [
+        "तुरंत",
+        "जल्दी",
+        "अभी",
+        "आपातकालीन",
+        "खतरा",
+        "तरीका"
+      ],
+      "ta": [
+        "உடனடி",
+        "உடன்",
+        "இருந்து",
+        "ஆபத்து",
+        "எச்சரிக்கை"
+      ],
+      "te": [
+        "తక్షణ",
+        "వెంటనే",
+        "ఆపద",
+        "సమస్య"
+      ],
+      "bn": [
+        "জরুরি",
+        "এখনই",
+        "তাৎক্ষণিক",
+        "বিপদ",
+        "সতর্কতা"
+      ],
+      "mr": [
+        "तरुणात",
+        "लगेच",
+        "योजन",
+        "धोक्यात",
+        "सतर्कता"
+      ],
+      "gu": [
+        "તાત્કાલીક",
+        "તરત",
+        "જોખમ",
+        "સાવધાની"
+      ],
+      "kn": [
+        "ತಕ್ಷಣ",
+        "ಆಪತ್ತು",
+        "ಸಮಸ್ಯೆ",
+        "ಎಚ್ಚರಿಕೆ"
+      ],
+      "ml": [
+        "ബദ്ധത",
+        "തരത്തില്‍",
+        "ആപത്ത്",
+        "അറിയിപ്പ്"
+      ],
+      "pa": [
+        "ਤੁਰੰਤ",
+        "ਪੇਸ਼",
+        "ਚਿੰਤਾ",
+        "ਧਮਕੀ"
+      ]
+    },
+    "forwardKeywords": {
+      "hi": [
+        "शेयर करें",
+        "सभी को भेजें",
+        "फॉरवर्ड करें",
+        "सबको बताएं",
+        "सभी बंधुओं को"
+      ],
+      "ta": [
+        "பகிர்க",
+        "அனுப்பவும்",
+        "எல்லாவரையும்",
+        "விநியోகம்"
+      ],
+      "te": [
+        "పంచుకోండి",
+        "పంపండి",
+        "ప్రసారం",
+        "విధానం"
+      ],
+      "bn": [
+        "শেয়ার করুন",
+        "সবাইকে পাঠান",
+        "ছড়িয়ে দিন",
+        "জানান"
+      ],
+      "mr": [
+        "शेअर करा",
+        "सर्वांना पाठवा",
+        "पसरवा",
+        "सांगा"
+      ],
+      "gu": [
+        "શેર કરો",
+        "પાઠવો",
+        "બધાને જણાવો",
+        "પ્રસારિત કરો"
+      ],
+      "kn": [
+        "ಹಂಚಿಕೊಳ್ಳಿ",
+        "ಕಳುಹಿಸಿ",
+        "ಪ್ರಸಾರ",
+        "ತಿಳಿಸಿ"
+      ],
+      "ml": [
+        "പങ്കുവെക്കുക",
+        "അയയ്ക്കുക",
+        "പ്രസരിപ്പിക്കുക",
+        "അറിയിക്കുക"
+      ],
+      "pa": [
+        "ਸਾਝਾ ਕਰੋ",
+        "ਭੇਜੋ",
+        "ਸਾਰਿਆਂ ਨੂੰ",
+        "ਜਾਣਕਾਰੀ"
+      ]
+    }
+  },
+  "factCheckSources": {
+    "national": {
+      "in": [
+        {
+          "name": "PIB Fact Check",
+          "url": "https://pib.gov.in",
+          "languages": ["en", "hi"],
+          "credibility": 0.95
+        },
+        {
+          "name": "Alt News",
+          "url": "https://www.altnews.in",
+          "languages": ["en", "hi", "ta", "te", "bn", "mr", "gu", "kn", "ml"],
+          "credibility": 0.92
+        },
+        {
+          "name": "Fact Crescendo",
+          "url": "https://www.factcrescendo.com",
+          "languages": ["en", "hi", "ta", "te", "ml"],
+          "credibility": 0.88
+        },
+        {
+          "name": "Boom Live",
+          "url": "https://www.boomlive.in",
+          "languages": ["en", "hi", "ta", "te"],
+          "credibility": 0.90
+        },
+        {
+          "name": "Factly.in",
+          "url": "https://factly.in",
+          "languages": ["en", "hi", "ta"],
+          "credibility": 0.89
+        }
+      ]
+    },
+    "international": {
+      "global": [
+        {
+          "name": "Google Fact Check Explorer",
+          "url": "https://toolbox.google.com/factcheck",
+          "languages": ["en"],
+          "credibility": 0.93
+        },
+        {
+          "name": "Snopes",
+          "url": "https://www.snopes.com",
+          "languages": ["en"],
+          "credibility": 0.91
+        },
+        {
+          "name": "Reuters Fact Check",
+          "url": "https://www.reuters.com/fact-check",
+          "languages": ["en"],
+          "credibility": 0.95
+        },
+        {
+          "name": "AP Fact Check",
+          "url": "https://apnews.com/APFactCheck",
+          "languages": ["en"],
+          "credibility": 0.95
+        }
+      ]
+    }
+  },
+  "regionalReportTemplates": {
+    "hi": {
+      "header": "मिथ्या सूचना विश्लेषण रिपोर्ट",
+      "summary": "सारांश",
+      "credibility": "विश्वसनीयता स्कोर",
+      "risk": "जोखिम स्तर",
+      "details": "विवरण",
+      "verdict": "निर्णय",
+      "sources": "स्रोत",
+      "recommendations": "सिफारिशें"
+    },
+    "ta": {
+      "header": "தவறான தகவல் பகுப்பாய்வு அறிக்கை",
+      "summary": "சுருக்கம்",
+      "credibility": "நம்பகத்தன்மை மதிப்பெண்",
+      "risk": "ஆபத்து நிலை",
+      "details": "விவரங்கள்",
+      "verdict": "தீர்ப்பு",
+      "sources": "ஆதாரங்கள்",
+      "recommendations": "பரிந்துரைகள்"
+    },
+    "te": {
+      "header": "తప్పుడు సమాచారం విశ్లేషణ నివేదిక",
+      "summary": "సారాంశం",
+      "credibility": "విశ్వసనీయత స్కోర్",
+      "risk": "ఆపద స్థితి",
+      "details": "వివరాలు",
+      "verdict": "తీర్పు",
+      "sources": "మూలాలు",
+      "recommendations": "సిఫారిషులు"
+    },
+    "bn": {
+      "header": "মিথ্যা তথ্য বিশ্লেষণ রিপোর্ট",
+      "summary": "সারসংক্ষেপ",
+      "credibility": "বিশ্বাসযোগ্যতা স্কোর",
+      "risk": "ঝুঁকি স্তর",
+      "details": "বিবরণ",
+      "verdict": "সিদ্ধান্ত",
+      "sources": "উৎস",
+      "recommendations": "সুপারিশ"
+    }
+  }
+}

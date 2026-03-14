@@ -12,6 +12,8 @@ import ScreenshotFactChecker from "@/components/ScreenshotFactChecker";
 import UrlInput from "@/components/UrlInput";
 import VoiceInput from "@/components/VoiceInput";
 import ReportToCyberPolice from "@/components/ReportToCyberPolice";
+import LanguageBar from "@/components/LanguageBar";
+import { type LanguageCode } from "@/config/languages";
 import logo from "@/assets/trustvault-logo.png";
 
 interface AnalysisResult {
@@ -120,6 +122,7 @@ const Index = () => {
   const [forwardDetection, setForwardDetection] = useState<ForwardDetectionResult | null>(null);
   const [inputMode, setInputMode] = useState<InputMode>("text");
   const [liveTopicIndex, setLiveTopicIndex] = useState(0);
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>("en");
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -213,6 +216,21 @@ const Index = () => {
           <p className="mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed">
             Paste text, take a screenshot, or enter a URL — our AI analyzes credibility and flags misinformation.
           </p>
+        </motion.div>
+
+        {/* Language Selector */}
+        <motion.div
+          className="mb-6"
+          initial={prefersReducedMotion ? {} : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.06 }}
+        >
+          <LanguageBar
+            currentLanguage={selectedLanguage}
+            onLanguageChange={setSelectedLanguage}
+            showQuickSelect={true}
+            maxQuickSelectItems={5}
+          />
         </motion.div>
 
         {/* Input section */}
