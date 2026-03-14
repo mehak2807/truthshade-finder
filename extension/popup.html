@@ -78,6 +78,22 @@
 
         <h3>Sources</h3>
         <ul id="sourceList" class="source-list"></ul>
+
+        <div id="sentimentSection" class="sentiment-section" hidden>
+          <h3>Article Analysis</h3>
+          <p class="sentiment-label">Sentiment Meter</p>
+          <div class="sentiment-meter">
+            <span id="sentimentPositive" class="sentiment-dot sentiment-positive" aria-label="Positive sentiment">🟢 Positive</span>
+            <span id="sentimentNeutral" class="sentiment-dot sentiment-neutral" aria-label="Neutral sentiment">🟡 Neutral</span>
+            <span id="sentimentNegative" class="sentiment-dot sentiment-negative" aria-label="Negative sentiment">🔴 Negative</span>
+          </div>
+          <p class="sentiment-label">Emotion Intensity</p>
+          <div class="intensity-bar-wrap">
+            <div id="intensityBar" class="intensity-bar"></div>
+          </div>
+          <p id="intensityPercent" class="intensity-percent"></p>
+          <p id="sentimentExplanation" class="sentiment-explanation"></p>
+        </div>
       </section>
     </main>
 

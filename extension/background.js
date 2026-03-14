@@ -76,6 +76,24 @@ function normalizeResult(result) {
 
   const sources = Array.isArray(result?.sources) ? result.sources : [];
 
+  // Normalize sentiment: validate fields so the popup renders safely even with partial data.
+  const rawSentiment = result?.sentiment;
+  let sentiment = null;
+  if (rawSentiment && typeof rawSentiment === "object") {
+    const validSentiments = ["positive", "neutral", "negative"];
+    const validIntensities = ["low", "medium", "high"];
+    sentiment = {
+      sentiment: validSentiments.includes(rawSentiment.sentiment) ? rawSentiment.sentiment : "neutral",
+      sentiment_score: typeof rawSentiment.sentiment_score === "number"
+        ? Math.max(-1, Math.min(1, rawSentiment.sentiment_score))
+        : 0,
+      emotional_intensity: validIntensities.includes(rawSentiment.emotional_intensity)
+        ? rawSentiment.emotional_intensity
+        : "low",
+      explanation: typeof rawSentiment.explanation === "string" ? rawSentiment.explanation : "",
+    };
+  }
+
   return {
     credibility_score: Math.max(0, Math.min(100, score)),
     verdict,
@@ -90,6 +108,7 @@ function normalizeResult(result) {
     recommended_action: String(result?.recommended_action ?? ""),
     forward_signals: Array.isArray(result?.forward_signals) ? result.forward_signals : [],
     forward_explanation: String(result?.forward_explanation ?? ""),
+    sentiment,
   };
 }
 
