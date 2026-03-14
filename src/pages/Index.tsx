@@ -31,6 +31,7 @@ import UrlInput from "@/components/UrlInput";
 import VoiceInput from "@/components/VoiceInput";
 import ReportToCyberPolice from "@/components/ReportToCyberPolice";
 import LanguageBar from "@/components/LanguageBar";
+import RumorOutbreakRadar from "@/components/RumorOutbreakRadar";
 import { type LanguageCode } from "@/config/languages";
 import logo from "@/assets/trustvault-logo.png";
 import { getVerificationStatus } from "@/lib/verificationHelpers";
@@ -1406,6 +1407,8 @@ const Index = () => {
                 </div>
               </div>
             </motion.div>
+
+            <RumorOutbreakRadar />
           </section>
         )}
       </div>
