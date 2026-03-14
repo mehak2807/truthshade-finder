@@ -2,7 +2,12 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -62,11 +67,27 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        cyber: {
+          dark: "hsl(var(--cyber-dark))",
+          blue: "hsl(var(--cyber-blue))",
+          cyan: "hsl(var(--cyber-cyan))",
+          purple: "hsl(var(--cyber-purple))",
+          glass: "hsl(var(--cyber-glass))",
+        },
+        mint: "#28e5a2",
+        "neon-yellow": "#ffd166",
+        "neon-orange": "#ff9f1c",
+        "danger-red": "#ff5d73",
+        "warn-yellow": "#fffb34",
+        "ok-green": "#4ade80",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      backdropBlur: {
+        glass: "8px",
       },
       keyframes: {
         "accordion-down": {
@@ -85,10 +106,36 @@ export default {
             height: "0",
           },
         },
+        rise: {
+          from: {
+            opacity: "0",
+            transform: "translateY(16px)",
+          },
+          to: {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        drift: {
+          "0%, 100%": {
+            transform: "translate(0, 0)",
+          },
+          "25%": {
+            transform: "translate(2px, -2px)",
+          },
+          "50%": {
+            transform: "translate(0, 2px)",
+          },
+          "75%": {
+            transform: "translate(-2px, 0)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        rise: "rise 0.6s ease-out",
+        drift: "drift 6s ease-in-out infinite",
       },
     },
   },

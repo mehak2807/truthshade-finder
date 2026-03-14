@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Flame, Home, Loader2, Mic, Search, Scan, Type, Globe } from "lucide-react";
+import {
+  Flame,
+  Home,
+  Loader2,
+  Mic,
+  Search,
+  Scan,
+  Type,
+  Globe,
+  BookOpen,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,12 +50,16 @@ interface ForwardDetectionResult {
 }
 
 const riskColors = {
-  low: "bg-trust-verified/10 text-trust-verified border border-trust-verified/25",
-  medium: "bg-trust-questionable/10 text-trust-questionable border border-trust-questionable/25",
-  high: "bg-trust-misinformation/10 text-trust-misinformation border border-trust-misinformation/25",
+  low: "glass-panel glow-ok border-ok-green/40 text-ok-green",
+  medium: "glass-panel glow-yellow border-warn-yellow/40 text-warn-yellow",
+  high: "glass-panel glow-danger border-danger-red/40 text-danger-red",
 };
 
-const riskLabels = { low: "Low Risk", medium: "Medium Risk", high: "High Risk" };
+const riskLabels = {
+  low: "Low Risk",
+  medium: "Medium Risk",
+  high: "High Risk",
+};
 
 type InputMode = "text" | "screenshot" | "url" | "voice";
 
@@ -58,21 +72,24 @@ const modeConfig = [
 
 const hotTopics = [
   {
-    title: "LPG Cylinder Shortage: Panic over cooking gas supply disruptions across India",
+    title:
+      "LPG Cylinder Shortage: Panic over cooking gas supply disruptions across India",
     image:
       "https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&fit=crop&w=640&q=80",
     source: "India Energy Watch",
     risk: "High",
   },
   {
-    title: "India LPG Crisis: Black marketing reports in Delhi and Bengaluru while government denies major shortage",
+    title:
+      "India LPG Crisis: Black marketing reports in Delhi and Bengaluru while government denies major shortage",
     image:
       "https://images.unsplash.com/photo-1605152276897-4f618f831968?auto=format&fit=crop&w=640&q=80",
     source: "Metro Policy Desk",
     risk: "High",
   },
   {
-    title: "US-Israel-Iran tensions escalate, oil crosses $100 and fuel supply fears rise",
+    title:
+      "US-Israel-Iran tensions escalate, oil crosses $100 and fuel supply fears rise",
     image:
       "https://images.unsplash.com/photo-1575320181282-9afab399332c?auto=format&fit=crop&w=640&q=80",
     source: "Global Conflict Monitor",
@@ -83,21 +100,24 @@ const hotTopics = [
     ],
   },
   {
-    title: "Middle East conflict pressure: PM-level India-Iran talks and impact on LPG and economy",
+    title:
+      "Middle East conflict pressure: PM-level India-Iran talks and impact on LPG and economy",
     image:
       "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=640&q=80",
     source: "Diplomacy Brief",
     risk: "Medium",
   },
   {
-    title: "IPL 2026 Schedule: Phase 1 announced, RCB vs SRH opener on March 28",
+    title:
+      "IPL 2026 Schedule: Phase 1 announced, RCB vs SRH opener on March 28",
     image:
       "https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=640&q=80",
     source: "Sports Pulse",
     risk: "Medium",
   },
   {
-    title: "Inflation update: CPI at 10-month high, RBI rates and fuel stress hit cost of living",
+    title:
+      "Inflation update: CPI at 10-month high, RBI rates and fuel stress hit cost of living",
     image:
       "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=640&q=80",
     source: "Economic Tracker",
@@ -112,7 +132,8 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [forwardDetection, setForwardDetection] = useState<ForwardDetectionResult | null>(null);
+  const [forwardDetection, setForwardDetection] =
+    useState<ForwardDetectionResult | null>(null);
   const [inputMode, setInputMode] = useState<InputMode>("text");
   const [liveTopicIndex, setLiveTopicIndex] = useState(0);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>("en");
@@ -148,11 +169,16 @@ const Index = () => {
       }
 
       const analysisData = analysisRes.value;
-      if (analysisData.error) throw new Error(analysisData.error.message || "Analysis failed");
+      if (analysisData.error)
+        throw new Error(analysisData.error.message || "Analysis failed");
       if (analysisData.data?.error) throw new Error(analysisData.data.error);
       setResult(analysisData.data as AnalysisResult);
 
-      if (forwardRes.status === "fulfilled" && !forwardRes.value.error && forwardRes.value.data) {
+      if (
+        forwardRes.status === "fulfilled" &&
+        !forwardRes.value.error &&
+        forwardRes.value.data
+      ) {
         setForwardDetection(forwardRes.value.data as ForwardDetectionResult);
       }
     } catch (e: any) {
@@ -171,7 +197,7 @@ const Index = () => {
   return (
     <div className="page-gradient">
       {/* Nav */}
-      <nav className="border-b border-border/60 sticky top-0 z-50 bg-white/70 backdrop-blur-md shadow-sm">
+      <nav className="border-b border-white/20 sticky top-0 z-50 glass-panel shadow-glow-md">
         <div className="container max-w-5xl mx-auto flex items-center justify-between h-16 px-4">
           <motion.div
             className="flex items-center gap-2.5 cursor-pointer"
@@ -179,23 +205,38 @@ const Index = () => {
             whileHover={prefersReducedMotion ? {} : { scale: 1.03 }}
             whileTap={prefersReducedMotion ? {} : { scale: 0.97 }}
           >
-            <img src={logo} alt="TrustVault" className="w-8 h-8 rounded-lg object-cover" />
-            <span className="text-lg font-bold font-['Space_Grotesk'] tracking-tight text-foreground">TrustVault</span>
+            <img
+              src={logo}
+              alt="TruthShade"
+              className="w-8 h-8 rounded-lg object-cover border border-white/40"
+            />
+            <span className="text-lg font-bold font-['Space_Grotesk'] tracking-tight text-gradient-cyber">
+              TruthShade
+            </span>
           </motion.div>
-          <motion.button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            whileHover={prefersReducedMotion ? {} : { scale: 1.04 }}
-            whileTap={prefersReducedMotion ? {} : { scale: 0.96 }}
-          >
-            <Home className="w-4 h-4" /> Home
-          </motion.button>
+          <div className="flex items-center gap-3">
+            <motion.button
+              onClick={() => navigate("/learn")}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-mint transition-colors hover-glow"
+              whileHover={prefersReducedMotion ? {} : { scale: 1.04 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.96 }}
+            >
+              <BookOpen className="w-4 h-4" /> Learn
+            </motion.button>
+            <motion.button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-mint transition-colors hover-glow"
+              whileHover={prefersReducedMotion ? {} : { scale: 1.04 }}
+              whileTap={prefersReducedMotion ? {} : { scale: 0.96 }}
+            >
+              <Home className="w-4 h-4" /> Home
+            </motion.button>
+          </div>
         </div>
       </nav>
 
       {/* App container */}
       <div className="container max-w-5xl mx-auto px-4 pt-14 pb-24">
-
         {/* Hero */}
         <motion.div
           className="max-w-xl mb-10"
@@ -204,10 +245,13 @@ const Index = () => {
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-foreground">
-            Verify any claim,<br />instantly.
+            Verify any claim,
+            <br />
+            instantly.
           </h1>
           <p className="mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Paste text, take a screenshot, or enter a URL — our AI analyzes credibility and flags misinformation.
+            Paste text, take a screenshot, or enter a URL — our AI analyzes
+            credibility and flags misinformation.
           </p>
         </motion.div>
 
@@ -234,15 +278,15 @@ const Index = () => {
           transition={{ duration: 0.5, delay: 0.12 }}
         >
           {/* Segmented tabs */}
-          <div className="flex gap-1 mb-3 bg-white/80 border border-border/60 rounded-xl p-1 w-fit shadow-sm backdrop-blur-sm">
+          <div className="flex gap-1 mb-3 border border-white/30 glass-panel rounded-lg p-1 w-fit shadow-glow-md">
             {modeConfig.map((m) => (
               <motion.button
                 key={m.key}
                 onClick={() => setInputMode(m.key)}
-                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                   inputMode === m.key
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "neon-button text-cyber-cyan shadow-glow-md"
+                    : "text-muted-foreground hover:text-cyber-cyan hover-glow"
                 }`}
                 whileHover={prefersReducedMotion ? {} : { scale: 1.03 }}
                 whileTap={prefersReducedMotion ? {} : { scale: 0.97 }}
@@ -250,7 +294,7 @@ const Index = () => {
                 {inputMode === m.key && (
                   <motion.span
                     layoutId="tab-pill"
-                    className="absolute inset-0 rounded-lg bg-primary/10 border border-primary/20"
+                    className="absolute inset-0 rounded-md border border-white/40 glass-panel"
                     transition={{ type: "spring", stiffness: 380, damping: 34 }}
                   />
                 )}
@@ -271,14 +315,14 @@ const Index = () => {
             >
               {/* Screenshot mode — full width */}
               {inputMode === "screenshot" && (
-                <div className="rounded-2xl border border-border/70 bg-white/90 shadow-elevated backdrop-blur-sm p-4">
+                <div className="rounded-lg border border-white/30 glass-panel shadow-glow-lg p-4 fade-in">
                   <ScreenshotFactChecker />
                 </div>
               )}
 
               {/* Voice mode — full width */}
               {inputMode === "voice" && (
-                <div className="rounded-2xl border border-border/70 bg-white/90 shadow-elevated backdrop-blur-sm">
+                <div className="rounded-lg border border-white/30 glass-panel shadow-glow-lg fade-in">
                   <VoiceInput onTranscript={handleVoiceTranscript} />
                 </div>
               )}
@@ -287,7 +331,7 @@ const Index = () => {
               {(inputMode === "text" || inputMode === "url") && (
                 <div className="grid lg:grid-cols-[1fr_220px] gap-4 items-start">
                   {/* Left: input panel */}
-                  <div className="rounded-2xl border border-border/70 bg-white/90 shadow-elevated backdrop-blur-sm overflow-hidden">
+                  <div className="rounded-lg border border-white/30 glass-panel shadow-glow-lg overflow-hidden fade-in">
                     {inputMode === "url" && (
                       <UrlInput
                         onTextExtracted={(text) => {
@@ -317,14 +361,25 @@ const Index = () => {
                       onClick={() => handleAnalyze()}
                       disabled={isLoading || isExtracting || !inputText.trim()}
                       className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-md hover:shadow-lg transition-shadow disabled:opacity-40 disabled:cursor-not-allowed"
-                      whileHover={prefersReducedMotion ? {} : { scale: 1.03, y: -1 }}
+                      whileHover={
+                        prefersReducedMotion ? {} : { scale: 1.03, y: -1 }
+                      }
                       whileTap={prefersReducedMotion ? {} : { scale: 0.97 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 20,
+                      }}
                     >
                       {isLoading ? (
-                        <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />{" "}
+                          Analyzing...
+                        </>
                       ) : (
-                        <><Search className="w-4 h-4" /> Analyze</>
+                        <>
+                          <Search className="w-4 h-4" /> Analyze
+                        </>
                       )}
                     </motion.button>
 
@@ -380,21 +435,27 @@ const Index = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.45 }}
             >
-              <div className="border-t border-border/50 pt-10">
+              <div className="border-t border-white/20 pt-10">
                 {/* Results header */}
                 <div className="flex flex-wrap items-center gap-2 mb-6">
-                  <h2 className="text-xl font-bold tracking-tight text-foreground">Results</h2>
+                  <h2 className="text-xl font-bold tracking-tight text-gradient-cyber">
+                    Results
+                  </h2>
                   {/* Evidence-aware status chip */}
                   {(() => {
                     const chip = getVerificationStatus(result);
                     return (
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${chip.className}`}>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${chip.className}`}
+                      >
                         {chip.label}
                       </span>
                     );
                   })()}
                   {/* Existing risk_level badge */}
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${riskColors[result.risk_level]}`}>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${riskColors[result.risk_level]}`}
+                  >
                     {riskLabels[result.risk_level]}
                   </span>
                 </div>
@@ -412,11 +473,23 @@ const Index = () => {
                       Credibility
                     </h3>
                     <div className="flex justify-center mb-5">
-                      <CredibilityGauge score={result.overall_score} label="Overall" size="lg" />
+                      <CredibilityGauge
+                        score={result.overall_score}
+                        label="Overall"
+                        size="lg"
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
-                      <CredibilityGauge score={result.source_score} label="Source" size="sm" />
-                      <CredibilityGauge score={result.claims_score} label="Claims" size="sm" />
+                      <CredibilityGauge
+                        score={result.source_score}
+                        label="Source"
+                        size="sm"
+                      />
+                      <CredibilityGauge
+                        score={result.claims_score}
+                        label="Claims"
+                        size="sm"
+                      />
                     </div>
                   </motion.div>
 
@@ -465,26 +538,46 @@ const Index = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.35, duration: 0.4 }}
                   >
-                    <h3 className="text-sm font-bold text-trust-misinformation">🚨 Viral WhatsApp Forward Detected</h3>
+                    <h3 className="text-sm font-bold text-trust-misinformation">
+                      🚨 Viral WhatsApp Forward Detected
+                    </h3>
                     <p className="mt-2 text-sm text-foreground">
-                      Similarity Match: {Math.round((forwardDetection.similarity_score || 0) * 100)}%
+                      Similarity Match:{" "}
+                      {Math.round(
+                        (forwardDetection.similarity_score || 0) * 100,
+                      )}
+                      %
                     </p>
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pattern</p>
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Pattern
+                    </p>
                     <ul className="mt-1 space-y-1 text-sm text-foreground/90">
-                      <li>• {forwardDetection.detected_pattern || "Known misinformation forward"}</li>
-                      {(forwardDetection.forward_signals || []).slice(0, 2).map((signal) => (
-                        <li key={signal}>• {signal}</li>
-                      ))}
+                      <li>
+                        •{" "}
+                        {forwardDetection.detected_pattern ||
+                          "Known misinformation forward"}
+                      </li>
+                      {(forwardDetection.forward_signals || [])
+                        .slice(0, 2)
+                        .map((signal) => (
+                          <li key={signal}>• {signal}</li>
+                        ))}
                     </ul>
-                    <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recommendation</p>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Recommendation
+                    </p>
                     <p className="mt-1 text-sm font-medium text-trust-misinformation">
-                      {forwardDetection.recommended_action || "Do not forward this message."}
+                      {forwardDetection.recommended_action ||
+                        "Do not forward this message."}
                     </p>
                   </motion.div>
                 )}
 
                 {result.overall_score < 50 && (
-                  <ReportToCyberPolice score={result.overall_score} contentToReport={inputText} />
+                  <ReportToCyberPolice
+                    score={result.overall_score}
+                    contentToReport={inputText}
+                  />
                 )}
               </div>
             </motion.section>
@@ -496,51 +589,72 @@ const Index = () => {
           <section className="mt-12">
             <div className="grid sm:grid-cols-3 gap-4">
               {[
-                { icon: Search, title: "AI Analysis", desc: "Analyzes claims, sources, and language patterns using advanced models." },
-                { icon: Scan, title: "Image OCR", desc: "Upload screenshots — AI extracts and analyzes text automatically." },
-                { icon: Globe, title: "URL Fetch", desc: "Enter any article URL to fetch and analyze its content instantly." },
+                {
+                  icon: Search,
+                  title: "AI Analysis",
+                  desc: "Analyzes claims, sources, and language patterns using advanced models.",
+                },
+                {
+                  icon: Scan,
+                  title: "Image OCR",
+                  desc: "Upload screenshots — AI extracts and analyzes text automatically.",
+                },
+                {
+                  icon: Globe,
+                  title: "URL Fetch",
+                  desc: "Enter any article URL to fetch and analyze its content instantly.",
+                },
               ].map((f, i) => (
                 <motion.div
                   key={i}
-                  className="rounded-2xl border border-border/70 bg-white/90 p-5 shadow-card backdrop-blur-sm"
+                  className="rounded-2xl glass-panel border border-white/30 p-5 shadow-glow-md hover-glow"
                   initial={prefersReducedMotion ? {} : { opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 + i * 0.08, duration: 0.4 }}
                 >
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                    <f.icon className="w-4 h-4 text-primary" />
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyber-blue/20 to-white/20 flex items-center justify-center mb-3 border border-white/30">
+                    <f.icon className="w-4 h-4 text-white" />
                   </div>
-                  <h3 className="font-semibold text-sm text-foreground mb-1">{f.title}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
+                  <h3 className="font-semibold text-sm text-foreground mb-1">
+                    {f.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {f.desc}
+                  </p>
                 </motion.div>
               ))}
             </div>
 
             <motion.div
-              className="mt-8 rounded-2xl border border-border/70 bg-white/90 p-4 shadow-elevated backdrop-blur-sm sm:p-5"
+              className="mt-8 rounded-2xl glass-panel border border-white/30 p-4 shadow-glow-md sm:p-5"
               initial={prefersReducedMotion ? {} : { opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: 0.2 }}
             >
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                  <p className="inline-flex items-center gap-2 rounded-full bg-cyber-blue/20 border border-white/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white">
                     <Flame className="h-3.5 w-3.5" />
                     Live Hot Topics
                   </p>
-                  <h3 className="mt-2 text-lg font-bold tracking-tight text-foreground">Trending Claims Being Verified Right Now</h3>
+                  <h3 className="mt-2 text-lg font-bold tracking-tight text-gradient-cyber">
+                    Trending Claims Being Verified Right Now
+                  </h3>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Tracking: <span className="font-semibold text-foreground">{hotTopics[liveTopicIndex].title}</span>
+                  Tracking:{" "}
+                  <span className="font-semibold text-white">
+                    {hotTopics[liveTopicIndex].title}
+                  </span>
                 </p>
               </div>
 
-              <div className="topics-marquee overflow-hidden rounded-xl border border-border/80 bg-background/70">
+              <div className="topics-marquee overflow-hidden rounded-xl border border-white/30 bg-background/40 glass-panel">
                 <div className="topics-track flex w-max gap-3 p-3">
                   {[...hotTopics, ...hotTopics].map((topic, index) => (
                     <article
                       key={`${topic.title}-${index}`}
-                      className="w-[260px] shrink-0 rounded-xl border border-border bg-card p-2 shadow-card"
+                      className="w-[260px] shrink-0 rounded-xl border border-white/30 glass-panel p-2 shadow-glow-sm hover:shadow-glow-md transition-all hover-glow"
                     >
                       <img
                         src={topic.image}
@@ -549,14 +663,18 @@ const Index = () => {
                         loading="lazy"
                       />
                       <div className="px-1 pb-1 pt-3">
-                        <p className="text-xs font-semibold leading-snug text-foreground">{topic.title}</p>
+                        <p className="text-xs font-semibold leading-snug text-gradient-cyber">
+                          {topic.title}
+                        </p>
                         <div className="mt-2 flex items-center justify-between text-[11px]">
-                          <span className="text-muted-foreground">{topic.source}</span>
+                          <span className="text-muted-foreground">
+                            {topic.source}
+                          </span>
                           <span
-                            className={`rounded-full px-2 py-0.5 font-semibold ${
+                            className={`rounded-full px-2 py-0.5 font-semibold border ${
                               topic.risk === "High"
-                                ? "bg-trust-misinformation/10 text-trust-misinformation"
-                                : "bg-trust-questionable/10 text-trust-questionable"
+                                ? "border-red-500/40 bg-red-500/10 text-red-400"
+                                : "border-amber-500/40 bg-amber-500/10 text-amber-400"
                             }`}
                           >
                             {topic.risk} Risk
@@ -567,16 +685,18 @@ const Index = () => {
                             <img
                               src={topic.faces[0]}
                               alt="Donald Trump"
-                              className="h-6 w-6 rounded-full border border-white object-cover shadow-sm"
+                              className="h-6 w-6 rounded-full border border-white/40 object-cover shadow-glow-sm"
                               loading="lazy"
                             />
                             <img
                               src={topic.faces[1]}
                               alt="Ali Khamenei"
-                              className="-ml-3 h-6 w-6 rounded-full border border-white object-cover shadow-sm"
+                              className="-ml-3 h-6 w-6 rounded-full border border-white/40 object-cover shadow-glow-sm"
                               loading="lazy"
                             />
-                            <span className="text-[10px] font-medium text-muted-foreground">Trump vs Khamenei</span>
+                            <span className="text-[10px] font-medium text-muted-foreground">
+                              Trump vs Khamenei
+                            </span>
                           </div>
                         )}
                         <button
@@ -584,7 +704,7 @@ const Index = () => {
                             setInputMode("text");
                             setInputText(topic.title);
                           }}
-                          className="mt-3 w-full rounded-lg border border-border px-2 py-1.5 text-[11px] font-semibold text-foreground transition-colors hover:bg-muted"
+                          className="mt-3 w-full rounded-lg neon-button border border-white/40 px-2 py-1.5 text-[11px] font-semibold text-white transition-all hover:shadow-glow-sm hover-glow"
                         >
                           Verify This Topic
                         </button>

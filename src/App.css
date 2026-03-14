@@ -2,41 +2,73 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
-  text-align: center;
+  text-align: left;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Apply page gradient to root - Mint accent theme */
+body {
+  background:
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(40, 229, 162, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(255, 209, 102, 0.08) 0%,
+      transparent 50%
+    ),
+    linear-gradient(
+      135deg,
+      #090f1b 0%,
+      #121a2d 25%,
+      #0a1627 50%,
+      #0f1826 75%,
+      #090f1b 100%
+    );
+  min-height: 100vh;
+  background-attachment: fixed;
 }
 
-.card {
-  padding: 2em;
+/* Subtle grid texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(
+      0deg,
+      transparent 24%,
+      rgba(40, 229, 162, 0.015) 25%,
+      rgba(40, 229, 162, 0.015) 26%,
+      transparent 27%,
+      transparent 74%,
+      rgba(40, 229, 162, 0.015) 75%,
+      rgba(40, 229, 162, 0.015) 76%,
+      transparent 77%,
+      transparent
+    ),
+    linear-gradient(
+      90deg,
+      transparent 24%,
+      rgba(40, 229, 162, 0.015) 25%,
+      rgba(40, 229, 162, 0.015) 26%,
+      transparent 27%,
+      transparent 74%,
+      rgba(40, 229, 162, 0.015) 75%,
+      rgba(40, 229, 162, 0.015) 76%,
+      transparent 77%,
+      transparent
+    );
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 1;
 }
 
-.read-the-docs {
-  color: #888;
+#root {
+  position: relative;
+  z-index: 2;
 }
