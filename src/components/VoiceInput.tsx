@@ -1,12 +1,36 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Mic, MicOff, Square } from "lucide-react";
+import { Mic, MicOff, Square, Globe, ChevronDown } from "lucide-react";
+import { LANGUAGES, type LanguageCode } from "../config/languages";
+import { languageDetector } from "../services/languageDetector";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 type VoiceStatus = "idle" | "listening" | "processing" | "done" | "error" | "unsupported";
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void;
+  selectedLanguage?: LanguageCode;
+  onLanguageChange?: (language: LanguageCode) => void;
 }
+
+// Map language codes to Web Speech API language codes
+const LANGUAGE_TO_SPEECH_API_CODE: Record<LanguageCode, string> = {
+  en: "en-US",
+  hi: "hi-IN",
+  bn: "bn-IN",
+  ta: "ta-IN",
+  te: "te-IN",
+  mr: "mr-IN",
+  gu: "gu-IN",
+  kn: "kn-IN",
+  ml: "ml-IN",
+  pa: "pa-IN",
+};
 
 const BAR_COUNT = 24;
 const MAX_DISPLAY_LENGTH = 100;
@@ -18,12 +42,18 @@ function isSpeechRecognitionSupported(): boolean {
   );
 }
 
-export default function VoiceInput({ onTranscript }: VoiceInputProps) {
+export default function VoiceInput({
+  onTranscript,
+  selectedLanguage = "en",
+  onLanguageChange,
+}: VoiceInputProps) {
   const [status, setStatus] = useState<VoiceStatus>(() =>
     isSpeechRecognitionSupported() ? "idle" : "unsupported"
   );
   const [errorMsg, setErrorMsg] = useState("");
   const [liveTranscript, setLiveTranscript] = useState("");
+  const [detectedLanguage, setDetectedLanguage] = useState<LanguageCode>(selectedLanguage);
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
 
   const recognitionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -31,6 +61,11 @@ export default function VoiceInput({ onTranscript }: VoiceInputProps) {
   const animFrameRef = useRef<number | null>(null);
   const barRefs = useRef<(HTMLDivElement | null)[]>([]);
   const finalTranscriptRef = useRef("");
+
+  // Sync selected language from parent when it changes
+  useEffect(() => {
+    setDetectedLanguage(selectedLanguage);
+  }, [selectedLanguage]);
 
   const stopVisualization = useCallback(() => {
     if (animFrameRef.current !== null) {
@@ -125,7 +160,7 @@ export default function VoiceInput({ onTranscript }: VoiceInputProps) {
     }
 
     const recognition = new SR();
-    recognition.lang = "en-US";
+    recognition.lang = LANGUAGE_TO_SPEECH_API_CODE[selectedLanguage];
     recognition.continuous = true;
     recognition.interimResults = true;
     recognitionRef.current = recognition;
@@ -135,6 +170,15 @@ export default function VoiceInput({ onTranscript }: VoiceInputProps) {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
           finalTranscriptRef.current += event.results[i][0].transcript + " ";
+          // Detect language from transcription if different from selected
+          const detectedLang = languageDetector(event.results[i][0].transcript);
+          if (detectedLang && detectedLang !== selectedLanguage) {
+            setDetectedLanguage(detectedLang);
+            // Optionally update parent component's selected language
+            if (onLanguageChange) {
+              onLanguageChange(detectedLang);
+            }
+          }
         } else {
           interim += event.results[i][0].transcript;
         }
@@ -198,18 +242,85 @@ export default function VoiceInput({ onTranscript }: VoiceInputProps) {
   }
 
   const statusText: Record<VoiceStatus, string> = {
-    idle: "Click Start to begin voice input",
-    listening: "🔴 Listening… speak now",
+    idle: `Click Start to begin voice input - Speaking ${LANGUAGES[selectedLanguage].nativeName}`,
+    listening: `🔴 Listening in ${LANGUAGES[selectedLanguage].nativeName}… speak now`,
     processing: "Processing…",
-    done: "Done! Click Start to record again.",
+    done: `Done! Click Start to record again in ${LANGUAGES[selectedLanguage].nativeName}`,
     error: "",
     unsupported: "",
   };
+
+  // Get language-specific color for visualization bars
+  const getLanguageColor = (lang: LanguageCode): string => {
+    const colorMap: Record<LanguageCode, string> = {
+      en: "hsl(200, 100%, 50%)",   // Blue
+      hi: "hsl(0, 100%, 50%)",     // Red
+      bn: "hsl(280, 100%, 50%)",   // Purple
+      ta: "hsl(40, 100%, 50%)",    // Orange
+      te: "hsl(120, 100%, 40%)",   // Green
+      mr: "hsl(340, 100%, 50%)",   // Pink
+      gu: "hsl(60, 100%, 50%)",    // Yellow
+      kn: "hsl(180, 100%, 50%)",   // Cyan
+      ml: "hsl(20, 100%, 50%)",    // Dark Orange
+      pa: "hsl(300, 100%, 50%)",   // Magenta
+    };
+    return colorMap[lang] || "hsl(var(--primary))";
+  };
+
+  const currentLanguageColor = getLanguageColor(selectedLanguage);
 
   const isListening = status === "listening";
 
   return (
     <div className="p-5 flex flex-col items-center gap-4">
+      {/* Language Selector */}
+      <div className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-secondary/30 border border-secondary/50">
+        <div className="flex items-center gap-2">
+          <Globe className="w-4 h-4 text-muted-foreground" />
+          <span className="text-xs font-medium">{LANGUAGES[selectedLanguage].nativeName}</span>
+          {detectedLanguage !== selectedLanguage && (
+            <span className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded">
+              Detected: {LANGUAGES[detectedLanguage].nativeName}
+            </span>
+          )}
+        </div>
+        
+        <DropdownMenu open={showLanguageMenu} onOpenChange={setShowLanguageMenu}>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-1 px-2 py-1 rounded hover:bg-secondary/50 transition-colors">
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {(Object.entries(LANGUAGES) as [LanguageCode, typeof LANGUAGES[LanguageCode]][]).map(
+              ([langCode, langConfig]) => (
+                <DropdownMenuItem
+                  key={langCode}
+                  onClick={() => {
+                    if (onLanguageChange) {
+                      onLanguageChange(langCode);
+                    }
+                    setDetectedLanguage(langCode);
+                    setShowLanguageMenu(false);
+                  }}
+                  className={selectedLanguage === langCode ? "bg-primary/10" : ""}
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">{langConfig.name}</div>
+                      <div className="text-xs text-muted-foreground">{langConfig.nativeName}</div>
+                    </div>
+                    {selectedLanguage === langCode && (
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                    )}
+                  </div>
+                </DropdownMenuItem>
+              )
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {/* Audio visualizer bars */}
       <div
         aria-hidden="true"
@@ -226,8 +337,8 @@ export default function VoiceInput({ onTranscript }: VoiceInputProps) {
             style={{
               height: "4px",
               backgroundColor: isListening
-                ? "hsl(var(--primary))"
-                : "hsl(var(--muted-foreground) / 0.3)",
+                ? currentLanguageColor
+                : `${currentLanguageColor}40`, // Add transparency when not listening
             }}
           />
         ))}
@@ -243,6 +354,12 @@ export default function VoiceInput({ onTranscript }: VoiceInputProps) {
             "{liveTranscript.length > MAX_DISPLAY_LENGTH
               ? liveTranscript.substring(0, MAX_DISPLAY_LENGTH) + "…"
               : liveTranscript}"
+          </p>
+        )}
+        {isListening && (
+          <p className="mt-1 text-xs text-primary/70 flex items-center justify-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            Recording in {LANGUAGES[selectedLanguage].nativeName}
           </p>
         )}
       </div>

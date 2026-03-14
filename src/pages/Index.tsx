@@ -136,10 +136,10 @@ const Index = () => {
     try {
       const [analysisRes, forwardRes] = await Promise.allSettled([
         supabase.functions.invoke("analyze-news", {
-          body: { text: trimmed },
+          body: { text: trimmed, language: selectedLanguage },
         }),
         supabase.functions.invoke("fact-check", {
-          body: { content: trimmed, language: "auto", type: "text" },
+          body: { content: trimmed, language: selectedLanguage, type: "text" },
         }),
       ]);
 
@@ -279,7 +279,11 @@ const Index = () => {
               {/* Voice mode — full width */}
               {inputMode === "voice" && (
                 <div className="rounded-2xl border border-border/70 bg-white/90 shadow-elevated backdrop-blur-sm">
-                  <VoiceInput onTranscript={handleVoiceTranscript} />
+                  <VoiceInput
+                    onTranscript={handleVoiceTranscript}
+                    selectedLanguage={selectedLanguage}
+                    onLanguageChange={setSelectedLanguage}
+                  />
                 </div>
               )}
 

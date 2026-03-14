@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getSystemPrompt, getUserInstruction } from "../_shared/languagePrompts.ts";
 
 // Schema version bumped to 2: segments and findings now include evidence fields.
 // Old fields (overall_score, source_score, claims_score, risk_level, segments,
@@ -228,25 +229,8 @@ export function buildEvidenceContext(
   return `KEY CLAIMS IDENTIFIED:\n${claimList}\n\nTRUSTED REFERENCE SOURCES (search links):\n${sourceList}`;
 }
 
-const systemPrompt = `You are TrustVault, an expert AI fact-checker and misinformation analyst. Analyze the provided text for credibility and misinformation.
-
-You MUST respond with a JSON object using the report_analysis tool. Do not output anything else.
-
-STRICT EVIDENCE RULES — YOU MUST FOLLOW THESE:
-1. A segment or finding may only be labelled "verified" when:
-   - evidence_strength is "strong" or "medium", AND
-   - the evidence array contains at least one reputable URL.
-2. If you cannot cite at least one reputable source URL for a claim, set evidence_strength to "weak" or "none" and use "questionable" (not "verified").
-3. Never assume a claim is true without evidence. When in doubt, choose "questionable" or "misinformation".
-4. Be conservative: it is better to flag something as uncertain than to falsely label misinformation as verified.
-
-Scoring guide:
-- overall_score: 0-100 (100 = fully credible)
-- source_score: 0-100 (how reliable are the cited sources)
-- claims_score: 0-100 (how accurate are the factual claims)
-- risk_level: "low", "medium", or "high"
-- For segments and findings: use evidence_strength "strong"/"medium"/"weak"/"none" and populate the evidence array accordingly.
-- For explanation: provide a clear, detailed, human-readable explanation of your reasoning, red flags found, manipulation techniques detected, and advice for the reader.`;
+// Note: systemPrompt is now dynamically generated per language in the serve function
+// See getSystemPrompt() in languagePrompts.ts for language-specific prompts
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -254,7 +238,7 @@ serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json();
+    const { text, language = "en" } = await req.json();
     if (!text || typeof text !== "string" || text.trim().length === 0) {
       return new Response(JSON.stringify({ error: "Text is required" }), {
         status: 400,
@@ -286,10 +270,10 @@ serve(async (req) => {
           temperature: 0,
           top_p: 0.1,
           messages: [
-            { role: "system", content: systemPrompt },
+            { role: "system", content: getSystemPrompt(language) },
             {
               role: "user",
-              content: `Analyze this text for credibility and misinformation:\n\n${text.slice(0, 5000)}\n\n---\n${evidenceContext}`,
+              content: `${getUserInstruction(language)}${text.slice(0, 5000)}\n\n---\n${evidenceContext}`,
             },
           ],
           tools: [
