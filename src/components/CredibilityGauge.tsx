@@ -13,10 +13,11 @@ const CredibilityGauge = ({ score, label, size = "lg" }: CredibilityGaugeProps) 
     return { text: "text-trust-misinformation", stroke: "stroke-trust-misinformation", bg: "bg-trust-misinformation/10" };
   };
 
+  // Labels reflect a confidence/credibility estimate, not a binary truth verdict.
   const getLabel = () => {
-    if (score >= 70) return "Credible";
-    if (score >= 40) return "Uncertain";
-    return "Unreliable";
+    if (score >= 70) return "High confidence";
+    if (score >= 40) return "Medium confidence";
+    return "Low confidence";
   };
 
   const colors = getColor();
