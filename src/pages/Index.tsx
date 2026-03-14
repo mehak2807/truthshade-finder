@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   AlertTriangle,
   Ban,
+  Brain,
   ClipboardPaste,
   Flame,
   Home,
@@ -37,6 +38,10 @@ import {
   detectIndiaScamShield,
   getIndiaScamShieldUiLabels,
 } from "@/lib/indiaScamShield";
+import {
+  detectManipulationTactics,
+  getManipulationTacticsUiLabels,
+} from "@/lib/manipulationTacticsDetector";
 
 interface AnalysisResult {
   overall_score: number;
@@ -74,6 +79,12 @@ const riskLabels = {
 
 const scamShieldRiskStyles = {
   low: "border-emerald-300/45 bg-emerald-400/10 text-emerald-100",
+  medium: "border-amber-300/50 bg-amber-400/15 text-amber-100",
+  high: "border-rose-300/55 bg-rose-500/15 text-rose-100",
+};
+
+const manipulationRiskStyles = {
+  low: "border-cyan-300/45 bg-cyan-400/10 text-cyan-100",
   medium: "border-amber-300/50 bg-amber-400/15 text-amber-100",
   high: "border-rose-300/55 bg-rose-500/15 text-rose-100",
 };
@@ -198,15 +209,32 @@ const Index = () => {
   const [liveTopicIndex, setLiveTopicIndex] = useState(0);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>("en");
   const [shareSourceLabel, setShareSourceLabel] = useState<string | null>(null);
+  const [openTacticLesson, setOpenTacticLesson] = useState<string | null>(null);
   const isResultsMode = !!result;
   const scamShield = useMemo(
     () => detectIndiaScamShield(inputText, selectedLanguage),
+    [inputText, selectedLanguage],
+  );
+  const manipulationTactics = useMemo(
+    () => detectManipulationTactics(inputText, selectedLanguage),
     [inputText, selectedLanguage],
   );
   const scamUiLabels = useMemo(
     () => getIndiaScamShieldUiLabels(selectedLanguage),
     [selectedLanguage],
   );
+  const manipulationUiLabels = useMemo(
+    () => getManipulationTacticsUiLabels(selectedLanguage),
+    [selectedLanguage],
+  );
+  const manipulationConfidencePercent = useMemo(
+    () => Math.max(0, Math.min(100, Math.round((manipulationTactics.score / 8) * 100))),
+    [manipulationTactics.score],
+  );
+  const manipulationCircumference = 2 * Math.PI * 34;
+  const manipulationStrokeOffset =
+    manipulationCircumference -
+    (manipulationConfidencePercent / 100) * manipulationCircumference;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -748,6 +776,90 @@ const Index = () => {
                     </div>
                   )}
 
+                  {inputText.trim() && manipulationTactics.detected && (
+                    <div
+                      className={`rounded-2xl border p-4 ${
+                        manipulationTactics.riskLevel === "high"
+                          ? "border-rose-300/55 bg-[linear-gradient(145deg,rgba(65,27,49,0.8),rgba(89,30,56,0.74))]"
+                          : "border-cyan-300/50 bg-[linear-gradient(145deg,rgba(23,41,62,0.82),rgba(27,51,78,0.74))]"
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
+                            <Brain className="h-3.5 w-3.5" />
+                            {manipulationUiLabels.detectorBadge}
+                          </p>
+                          <h4 className="mt-2 text-sm font-semibold text-white">
+                            {manipulationTactics.tactics.length} {manipulationTactics.tactics.length > 1
+                              ? manipulationUiLabels.tacticPlural
+                              : manipulationUiLabels.tacticSingular}{" "}
+                            {manipulationUiLabels.detectedSuffix}
+                          </h4>
+                          <p className="mt-1 text-xs leading-relaxed text-white/85">
+                            {manipulationTactics.summary}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-20 w-20">
+                            <svg viewBox="0 0 84 84" className="h-20 w-20 -rotate-90">
+                              <circle
+                                cx="42"
+                                cy="42"
+                                r="34"
+                                fill="none"
+                                className="stroke-white/20"
+                                strokeWidth="8"
+                              />
+                              <circle
+                                cx="42"
+                                cy="42"
+                                r="34"
+                                fill="none"
+                                className="stroke-cyan-300"
+                                strokeWidth="8"
+                                strokeLinecap="round"
+                                strokeDasharray={manipulationCircumference}
+                                strokeDashoffset={manipulationStrokeOffset}
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <span className="text-sm font-bold text-white">
+                                {manipulationConfidencePercent}%
+                              </span>
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] uppercase tracking-wider text-cyan-100/80">
+                              {manipulationUiLabels.confidenceMeter}
+                            </p>
+                            <span
+                              className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${manipulationRiskStyles[manipulationTactics.riskLevel]}`}
+                            >
+                              {manipulationTactics.riskLevel === "high"
+                                ? manipulationUiLabels.manipulationRiskHigh
+                                : manipulationTactics.riskLevel === "medium"
+                                  ? manipulationUiLabels.manipulationRiskMedium
+                                  : manipulationUiLabels.manipulationRiskLow}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {manipulationTactics.tactics.slice(0, 3).map((tactic) => (
+                          <span
+                            key={tactic.key}
+                            className="rounded-full border border-white/35 bg-black/20 px-2.5 py-1 text-[10px] font-medium text-white/90"
+                          >
+                            {tactic.title}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Analysis preview card */}
                   <div
                     className={`rounded-2xl p-4 min-h-[150px] ${
@@ -1029,6 +1141,126 @@ const Index = () => {
                         <AlertTriangle className="h-3.5 w-3.5" />
                         {scamUiLabels.fileCyberComplaint}
                       </a>
+                    </div>
+                  </motion.div>
+                )}
+
+                {manipulationTactics.detected && (
+                  <motion.div
+                    className="mt-5 rounded-2xl border border-cyan-300/45 bg-[linear-gradient(145deg,rgba(19,35,54,0.82),rgba(28,49,74,0.76))] p-4"
+                    initial={prefersReducedMotion ? {} : { opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.42, duration: 0.4 }}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-sm font-bold text-cyan-100">
+                        {manipulationUiLabels.breakdownTitle}
+                      </h3>
+                      <span
+                        className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${manipulationRiskStyles[manipulationTactics.riskLevel]}`}
+                      >
+                        {manipulationTactics.riskLevel === "high"
+                          ? manipulationUiLabels.manipulationRiskHigh
+                          : manipulationTactics.riskLevel === "medium"
+                            ? manipulationUiLabels.manipulationRiskMedium
+                            : manipulationUiLabels.manipulationRiskLow}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 inline-flex items-center gap-3 rounded-xl border border-cyan-200/30 bg-black/20 px-3 py-2">
+                      <div className="relative h-16 w-16">
+                        <svg viewBox="0 0 84 84" className="h-16 w-16 -rotate-90">
+                          <circle
+                            cx="42"
+                            cy="42"
+                            r="34"
+                            fill="none"
+                            className="stroke-white/20"
+                            strokeWidth="8"
+                          />
+                          <circle
+                            cx="42"
+                            cy="42"
+                            r="34"
+                            fill="none"
+                            className="stroke-cyan-300"
+                            strokeWidth="8"
+                            strokeLinecap="round"
+                            strokeDasharray={manipulationCircumference}
+                            strokeDashoffset={manipulationStrokeOffset}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+                          {manipulationConfidencePercent}%
+                        </div>
+                      </div>
+                      <p className="text-xs text-cyan-100/90">{manipulationUiLabels.confidenceMeter}</p>
+                    </div>
+
+                    <p className="mt-2 text-xs leading-relaxed text-cyan-100/90">
+                      {manipulationTactics.summary}
+                    </p>
+
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      {manipulationTactics.tactics.map((tactic) => (
+                        <div
+                          key={tactic.key}
+                          className="rounded-lg border border-cyan-200/30 bg-black/20 px-3 py-3"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-xs font-semibold text-cyan-100">{tactic.title}</p>
+                            <span className="rounded-full border border-white/30 bg-white/10 px-2 py-0.5 text-[10px] text-white/90">
+                              {tactic.severity}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-[11px] text-cyan-100/80">
+                            {tactic.description}
+                          </p>
+                          <p className="mt-2 text-[10px] uppercase tracking-wider text-cyan-100/70">
+                            {manipulationUiLabels.signalsLabel}
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {tactic.matchedSignals.slice(0, 3).map((signal) => (
+                              <span
+                                key={signal}
+                                className="rounded-full border border-cyan-200/30 bg-cyan-200/10 px-2 py-0.5 text-[10px] text-cyan-100/85"
+                              >
+                                {signal}
+                              </span>
+                            ))}
+                          </div>
+                          <p className="mt-2 text-[11px] font-medium text-emerald-200">
+                            {manipulationUiLabels.tipLabel}: {tactic.educationalTip}
+                          </p>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setOpenTacticLesson((prev) =>
+                                prev === tactic.key ? null : tactic.key,
+                              )
+                            }
+                            className="mt-2 inline-flex items-center rounded-md border border-cyan-200/40 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-semibold text-cyan-100 hover:bg-cyan-300/20"
+                          >
+                            {openTacticLesson === tactic.key
+                              ? manipulationUiLabels.hideLessonButton
+                              : manipulationUiLabels.teachMeButton}
+                          </button>
+
+                          {openTacticLesson === tactic.key && (
+                            <div className="mt-2 rounded-lg border border-emerald-200/35 bg-emerald-300/10 px-2.5 py-2">
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-100">
+                                {manipulationUiLabels.miniLessonTitle}
+                              </p>
+                              <ul className="mt-1 space-y-1 text-[11px] text-emerald-100/90">
+                                <li>1. {manipulationUiLabels.lessonStep1}</li>
+                                <li>2. {manipulationUiLabels.lessonStep2}</li>
+                                <li>3. {manipulationUiLabels.lessonStep3}</li>
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </motion.div>
                 )}
