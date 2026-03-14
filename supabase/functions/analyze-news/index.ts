@@ -1,10 +1,252 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+// Schema version bumped to 2: segments and findings now include evidence fields.
+// Old fields (overall_score, source_score, claims_score, risk_level, segments,
+// findings, explanation) are fully preserved for backwards compatibility.
+export const SCHEMA_VERSION = 2;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+export type EvidenceStrength = "strong" | "medium" | "weak" | "none";
+export type CredibilityLevel = "verified" | "questionable" | "misinformation";
+
+export interface EvidenceSource {
+  title: string;
+  url: string;
+}
+
+export interface Segment {
+  text: string;
+  level: CredibilityLevel;
+  evidence: EvidenceSource[];
+  evidence_strength: EvidenceStrength;
+}
+
+export interface Finding {
+  title: string;
+  description: string;
+  type: CredibilityLevel;
+  evidence: EvidenceSource[];
+  evidence_strength: EvidenceStrength;
+}
+
+export interface AnalysisReport {
+  schema_version: number;
+  overall_score: number;
+  source_score: number;
+  claims_score: number;
+  risk_level: "low" | "medium" | "high";
+  segments: Segment[];
+  findings: Finding[];
+  explanation: string;
+}
+
+/** Evidence levels that permit the "verified" label. */
+export const VERIFIED_EVIDENCE_THRESHOLD: EvidenceStrength[] = ["strong", "medium"];
+
+/**
+ * Downgrades any segment or finding whose level is "verified" but whose
+ * evidence_strength is insufficient (weak / none).  This is the core
+ * conservative rule: *no evidence → not verified*.
+ */
+export function enforceEvidenceRule(report: AnalysisReport): AnalysisReport {
+  const isAllowed = (strength: EvidenceStrength) =>
+    VERIFIED_EVIDENCE_THRESHOLD.includes(strength);
+
+  const fixedSegments: Segment[] = report.segments.map((seg) => {
+    if (seg.level === "verified" && !isAllowed(seg.evidence_strength)) {
+      return { ...seg, level: "questionable" as CredibilityLevel };
+    }
+    return seg;
+  });
+
+  const fixedFindings: Finding[] = report.findings.map((f) => {
+    if (f.type === "verified" && !isAllowed(f.evidence_strength)) {
+      return { ...f, type: "questionable" as CredibilityLevel };
+    }
+    return f;
+  });
+
+  return { ...report, segments: fixedSegments, findings: fixedFindings };
+}
+
+/** Trusted search links used as a conservative evidence fallback. */
+export function buildTrustedSearchSources(
+  query: string
+): Array<{ title: string; url: string; snippet: string }> {
+  const encoded = encodeURIComponent(query);
+  return [
+    {
+      title: "Google Fact Check Explorer",
+      url: `https://toolbox.google.com/factcheck/explorer/search/${encoded}`,
+      snippet: "Search verified fact-check verdicts",
+    },
+    {
+      title: "Reuters Search",
+      url: `https://www.reuters.com/site-search/?query=${encoded}`,
+      snippet: "Reuters reporting search",
+    },
+    {
+      title: "AP News Search",
+      url: `https://apnews.com/search?q=${encoded}`,
+      snippet: "Associated Press reporting",
+    },
+    {
+      title: "Snopes Search",
+      url: `https://www.snopes.com/?s=${encoded}`,
+      snippet: "Snopes fact checks",
+    },
+    {
+      title: "PolitiFact Search",
+      url: `https://www.politifact.com/search/?q=${encoded}`,
+      snippet: "PolitiFact fact checks",
+    },
+    {
+      title: "FactCheck.org Search",
+      url: `https://www.factcheck.org/?s=${encoded}`,
+      snippet: "FactCheck.org reports",
+    },
+    {
+      title: "Wikipedia Search",
+      url: `https://en.wikipedia.org/w/index.php?search=${encoded}`,
+      snippet: "Wikipedia reference articles",
+    },
+    {
+      title: "WHO Search",
+      url: `https://www.who.int/search?indexCatalogue=genericsearchindex1&searchQuery=${encoded}`,
+      snippet: "WHO health information",
+    },
+    {
+      title: "CDC Search",
+      url: `https://search.cdc.gov/search/index.html?query=${encoded}`,
+      snippet: "CDC health information",
+    },
+  ];
+}
+
+/**
+ * Extract 1–5 key verifiable claims from the input text.
+ * Uses the same model/gateway as the main analysis.
+ */
+export async function extractClaims(
+  apiKey: string,
+  text: string
+): Promise<string[]> {
+  const response = await fetch(
+    "https://ai.gateway.lovable.dev/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        temperature: 0,
+        top_p: 0.1,
+        messages: [
+          {
+            role: "system",
+            content:
+              "Extract factual claims from the provided text. Return only 1 to 5 concise, verifiable factual claims. Ignore opinions, emotions, and jokes.",
+          },
+          {
+            role: "user",
+            content: `Text:\n\n${text.slice(0, 5000)}`,
+          },
+        ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "claim_list",
+              description: "List detected factual claims",
+              parameters: {
+                type: "object",
+                properties: {
+                  claims: {
+                    type: "array",
+                    items: { type: "string" },
+                    minItems: 1,
+                    maxItems: 5,
+                  },
+                },
+                required: ["claims"],
+                additionalProperties: false,
+              },
+            },
+          },
+        ],
+        tool_choice: {
+          type: "function",
+          function: { name: "claim_list" },
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    console.error("Claim extraction failed:", response.status);
+    return [];
+  }
+
+  const data = await response.json();
+  const args =
+    data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+  if (!args) return [];
+
+  try {
+    const parsed = JSON.parse(args);
+    return Array.isArray(parsed.claims)
+      ? parsed.claims.filter(
+          (c: unknown) => typeof c === "string" && c.trim().length > 0
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Build a formatted evidence context string from trusted source links. */
+export function buildEvidenceContext(
+  claims: string[],
+  sources: Array<{ title: string; url: string; snippet: string }>
+): string {
+  const claimList =
+    claims.length > 0
+      ? claims.map((c, i) => `${i + 1}. ${c}`).join("\n")
+      : "No specific claims extracted.";
+
+  const sourceList = sources
+    .map((s, i) => `${i + 1}. ${s.title} | ${s.url} | ${s.snippet}`)
+    .join("\n");
+
+  return `KEY CLAIMS IDENTIFIED:\n${claimList}\n\nTRUSTED REFERENCE SOURCES (search links):\n${sourceList}`;
+}
+
+const systemPrompt = `You are TrustVault, an expert AI fact-checker and misinformation analyst. Analyze the provided text for credibility and misinformation.
+
+You MUST respond with a JSON object using the report_analysis tool. Do not output anything else.
+
+STRICT EVIDENCE RULES — YOU MUST FOLLOW THESE:
+1. A segment or finding may only be labelled "verified" when:
+   - evidence_strength is "strong" or "medium", AND
+   - the evidence array contains at least one reputable URL.
+2. If you cannot cite at least one reputable source URL for a claim, set evidence_strength to "weak" or "none" and use "questionable" (not "verified").
+3. Never assume a claim is true without evidence. When in doubt, choose "questionable" or "misinformation".
+4. Be conservative: it is better to flag something as uncertain than to falsely label misinformation as verified.
+
+Scoring guide:
+- overall_score: 0-100 (100 = fully credible)
+- source_score: 0-100 (how reliable are the cited sources)
+- claims_score: 0-100 (how accurate are the factual claims)
+- risk_level: "low", "medium", or "high"
+- For segments and findings: use evidence_strength "strong"/"medium"/"weak"/"none" and populate the evidence array accordingly.
+- For explanation: provide a clear, detailed, human-readable explanation of your reasoning, red flags found, manipulation techniques detected, and advice for the reader.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -25,20 +267,11 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are TrustVault, an expert AI fact-checker and misinformation analyst. Analyze the provided text for credibility and misinformation.
-
-You MUST respond with a JSON object using this exact tool call. Do not output anything else.
-
-Analyze every sentence and assign each a credibility level. Be thorough and specific in your explanations.
-
-Scoring guide:
-- overall_score: 0-100 (100 = fully credible)
-- source_score: 0-100 (how reliable are the cited sources)
-- claims_score: 0-100 (how accurate are the factual claims)
-- risk_level: "low", "medium", or "high"
-- For segments: "verified" = supported by evidence, "questionable" = lacks evidence, "misinformation" = contradicts known facts
-- For findings: provide 3-5 specific observations with type "verified", "questionable", or "misinformation"
-- For explanation: provide a clear, detailed, human-readable explanation of your reasoning. Explain WHY the content is rated this way, what specific red flags or green flags you found, what logical fallacies or manipulation techniques are used (if any), and what a reader should watch out for. This is the "Explainable AI" section — be thorough and educational.`;
+    // --- RAG step: extract claims and build evidence context ---
+    const claims = await extractClaims(LOVABLE_API_KEY, text);
+    const primaryClaim = claims[0] || text.slice(0, 120);
+    const trustedSources = buildTrustedSearchSources(primaryClaim);
+    const evidenceContext = buildEvidenceContext(claims, trustedSources);
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -50,11 +283,13 @@ Scoring guide:
         },
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
+          temperature: 0,
+          top_p: 0.1,
           messages: [
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `Analyze this text for credibility and misinformation:\n\n${text.slice(0, 5000)}`,
+              content: `Analyze this text for credibility and misinformation:\n\n${text.slice(0, 5000)}\n\n---\n${evidenceContext}`,
             },
           ],
           tools: [
@@ -97,8 +332,28 @@ Scoring guide:
                               "misinformation",
                             ],
                           },
+                          evidence: {
+                            type: "array",
+                            description:
+                              "Sources that support or refute this segment",
+                            items: {
+                              type: "object",
+                              properties: {
+                                title: { type: "string" },
+                                url: { type: "string" },
+                              },
+                              required: ["title", "url"],
+                              additionalProperties: false,
+                            },
+                          },
+                          evidence_strength: {
+                            type: "string",
+                            enum: ["strong", "medium", "weak", "none"],
+                            description:
+                              "How strong is the available evidence for this segment",
+                          },
                         },
-                        required: ["text", "level"],
+                        required: ["text", "level", "evidence", "evidence_strength"],
                         additionalProperties: false,
                       },
                     },
@@ -117,14 +372,41 @@ Scoring guide:
                               "misinformation",
                             ],
                           },
+                          evidence: {
+                            type: "array",
+                            description:
+                              "Sources that support or refute this finding",
+                            items: {
+                              type: "object",
+                              properties: {
+                                title: { type: "string" },
+                                url: { type: "string" },
+                              },
+                              required: ["title", "url"],
+                              additionalProperties: false,
+                            },
+                          },
+                          evidence_strength: {
+                            type: "string",
+                            enum: ["strong", "medium", "weak", "none"],
+                            description:
+                              "How strong is the available evidence for this finding",
+                          },
                         },
-                        required: ["title", "description", "type"],
+                        required: [
+                          "title",
+                          "description",
+                          "type",
+                          "evidence",
+                          "evidence_strength",
+                        ],
                         additionalProperties: false,
                       },
                     },
                     explanation: {
                       type: "string",
-                      description: "A detailed, human-readable explanation of the AI's reasoning process, red flags found, manipulation techniques detected, and advice for the reader.",
+                      description:
+                        "A detailed, human-readable explanation of the AI's reasoning process, red flags found, manipulation techniques detected, and advice for the reader.",
                     },
                   },
                   required: [
@@ -152,14 +434,24 @@ Scoring guide:
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Rate limited. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({
+            error: "Rate limited. Please try again in a moment.",
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: "AI usage limit reached. Please add credits." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({
+            error: "AI usage limit reached. Please add credits.",
+          }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
         );
       }
       const errText = await response.text();
@@ -174,7 +466,13 @@ Scoring guide:
       throw new Error("No analysis returned from AI");
     }
 
-    const analysis = JSON.parse(toolCall.function.arguments);
+    const rawAnalysis = JSON.parse(toolCall.function.arguments) as AnalysisReport;
+
+    // Enforce the "no evidence → not verified" rule as a server-side safety net.
+    const analysis = enforceEvidenceRule({
+      ...rawAnalysis,
+      schema_version: SCHEMA_VERSION,
+    });
 
     return new Response(JSON.stringify(analysis), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -182,8 +480,13 @@ Scoring guide:
   } catch (e) {
     console.error("analyze-news error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        error: e instanceof Error ? e.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
     );
   }
 });
