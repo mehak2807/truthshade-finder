@@ -207,11 +207,11 @@ const Index = () => {
           >
             <img
               src={logo}
-              alt="TruthShade"
+              alt="TrustVault"
               className="w-8 h-8 rounded-lg object-cover border border-white/40"
             />
             <span className="text-lg font-bold font-['Space_Grotesk'] tracking-tight text-gradient-cyber">
-              TruthShade
+              TrustVault
             </span>
           </motion.div>
           <div className="flex items-center gap-3">
@@ -323,7 +323,11 @@ const Index = () => {
               {/* Voice mode — full width */}
               {inputMode === "voice" && (
                 <div className="rounded-lg border border-white/30 glass-panel shadow-glow-lg fade-in">
-                  <VoiceInput onTranscript={handleVoiceTranscript} />
+                  <VoiceInput
+                    onTranscript={handleVoiceTranscript}
+                    selectedLanguage={selectedLanguage}
+                    onLanguageChange={setSelectedLanguage}
+                  />
                 </div>
               )}
 

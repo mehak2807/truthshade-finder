@@ -3,7 +3,7 @@
 ## 📋 File Structure
 
 ```
-truthshade-finder/
+trustvault-finder/
 ├── src/
 │   ├── config/
 │   │   └── languages.ts                    # Language configuration

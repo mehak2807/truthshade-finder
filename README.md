@@ -1,4 +1,4 @@
-# TrustVault (Truthshade Finder)
+# TrustVault
 
 TrustVault is an AI-assisted misinformation and manipulation detection system designed to process multi-channel inputs (text, images, documents, URLs, and audio/video) and produce a unified credibility assessment. The solution combines content ingestion, multilingual NLP, visual manipulation analysis, deepfake detection, and fact-check verification to generate an explainable trust score and auditable decision trail.
 

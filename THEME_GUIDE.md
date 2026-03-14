@@ -1,6 +1,6 @@
 # 🌌 Cyber Trust Theme Guide
 
-A dark, neon-glass "cyber trust" design system for Truthshade Finder.
+A dark, neon-glass "cyber trust" design system for TrustVault Finder.
 
 ## Theme Identity
 

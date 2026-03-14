@@ -1,5 +1,5 @@
 /**
- * Text filtration / normalization utility for the TruthShade fact-check pipeline.
+ * Text filtration / normalization utility for the TrustVault fact-check pipeline.
  * Runs before any AI model call to clean and condense user input.
  */
 

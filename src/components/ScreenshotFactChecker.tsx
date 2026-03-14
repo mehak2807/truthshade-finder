@@ -232,7 +232,7 @@ const ScreenshotFactChecker = () => {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: "TruthShade Screenshot Fact-Check",
+          title: "TrustVault Screenshot Fact-Check",
           text: summary,
         });
       } else {

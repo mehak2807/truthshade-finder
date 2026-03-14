@@ -582,7 +582,7 @@ const fetchWikipediaSources = async (query: string): Promise<Source[]> => {
   )}&limit=3&namespace=0&format=json`;
 
   const response = await fetch(endpoint, {
-    headers: { "User-Agent": "TruthShade/1.0 (fact-check)" },
+    headers: { "User-Agent": "TrustVault/1.0 (fact-check)" },
   });
   if (!response.ok) return [];
 

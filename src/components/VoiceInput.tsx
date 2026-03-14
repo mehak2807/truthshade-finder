@@ -274,12 +274,12 @@ export default function VoiceInput({
   return (
     <div className="p-5 flex flex-col items-center gap-4">
       {/* Language Selector */}
-      <div className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-secondary/30 border border-secondary/50">
+      <div className="w-full flex items-center justify-between px-3 py-2 rounded-lg glass-panel-alt border border-warn-yellow/40 glow-yellow">
         <div className="flex items-center gap-2">
-          <Globe className="w-4 h-4 text-muted-foreground" />
-          <span className="text-xs font-medium">{LANGUAGES[selectedLanguage].nativeName}</span>
+          <Globe className="w-4 h-4 text-warn-yellow" />
+          <span className="text-xs font-medium text-foreground">{LANGUAGES[selectedLanguage].nativeName}</span>
           {detectedLanguage !== selectedLanguage && (
-            <span className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded">
+            <span className="text-xs text-warn-yellow bg-warn-yellow/15 border border-warn-yellow/35 px-2 py-0.5 rounded">
               Detected: {LANGUAGES[detectedLanguage].nativeName}
             </span>
           )}
@@ -287,11 +287,11 @@ export default function VoiceInput({
         
         <DropdownMenu open={showLanguageMenu} onOpenChange={setShowLanguageMenu}>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-1 px-2 py-1 rounded hover:bg-secondary/50 transition-colors">
+            <button className="flex items-center gap-1 px-2 py-1 rounded border border-white/20 text-muted-foreground hover:text-foreground hover:border-white/40 hover:bg-white/5 transition-colors">
               <ChevronDown className="w-4 h-4" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-52 bg-[#101a2a]/95 border border-white/25 text-foreground backdrop-blur-xl">
             {(Object.entries(LANGUAGES) as [LanguageCode, typeof LANGUAGES[LanguageCode]][]).map(
               ([langCode, langConfig]) => (
                 <DropdownMenuItem
@@ -303,7 +303,7 @@ export default function VoiceInput({
                     setDetectedLanguage(langCode);
                     setShowLanguageMenu(false);
                   }}
-                  className={selectedLanguage === langCode ? "bg-primary/10" : ""}
+                  className={selectedLanguage === langCode ? "bg-primary/15 border border-cyber-cyan/35" : "hover:bg-white/10"}
                 >
                   <div className="flex items-center gap-2 w-full">
                     <div className="flex-1">
@@ -357,7 +357,7 @@ export default function VoiceInput({
           </p>
         )}
         {isListening && (
-          <p className="mt-1 text-xs text-primary/70 flex items-center justify-center gap-1">
+          <p className="mt-1 text-xs text-cyber-cyan/80 flex items-center justify-center gap-1">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             Recording in {LANGUAGES[selectedLanguage].nativeName}
           </p>
@@ -377,7 +377,7 @@ export default function VoiceInput({
         {isListening ? (
           <button
             onClick={handleStop}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-trust-misinformation text-white font-medium text-sm hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-danger-red/40 bg-danger-red/20 text-danger-red font-medium text-sm glow-danger hover:opacity-95 transition-opacity"
           >
             <Square className="w-4 h-4 fill-current" /> Stop
           </button>
@@ -385,7 +385,7 @@ export default function VoiceInput({
           <button
             onClick={handleStart}
             disabled={status === "processing"}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-5 py-2 rounded-lg neon-button border border-cyber-cyan/40 text-cyber-cyan font-medium text-sm shadow-glow-md hover:opacity-95 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Mic className="w-4 h-4" />
             {status === "done" ? "Record Again" : "Start"}

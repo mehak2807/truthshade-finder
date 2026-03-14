@@ -1,4 +1,4 @@
-# TruthShade Regional Language Support - Implementation Summary
+# TrustVault Regional Language Support - Implementation Summary
 
 ## 🎯 Project Overview
 
@@ -152,7 +152,7 @@ You've successfully implemented a **comprehensive multi-language misinformation 
 
 ### 1. Deploy Supabase Function
 ```bash
-cd truthshade-finder
+cd trustvault-finder
 supabase functions deploy regional-language-analysis
 ```
 
@@ -318,7 +318,7 @@ Once deployed, you should see:
 
 ## 📄 License & Attribution
 
-This implementation builds on the existing TruthShade codebase and adds regional language capabilities. All components are production-ready and fully documented.
+This implementation builds on the existing TrustVault codebase and adds regional language capabilities. All components are production-ready and fully documented.
 
 ---
 

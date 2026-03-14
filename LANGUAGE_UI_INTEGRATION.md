@@ -46,8 +46,8 @@ const Index = () => {
       >
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="TruthShade" className="h-10" />
-            <h1 className="text-2xl font-bold text-slate-900">TruthShade</h1>
+            <img src={logo} alt="TrustVault" className="h-10" />
+            <h1 className="text-2xl font-bold text-slate-900">TrustVault</h1>
           </div>
 
           {/* OPTION 1: Language Button in Header */}

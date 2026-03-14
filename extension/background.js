@@ -1,5 +1,5 @@
 const DEFAULT_API_ENDPOINT = "https://rbbdjyhijolreehhojva.supabase.co/functions/v1/fact-check";
-const MENU_ID = "truthshade-verify-selection";
+const MENU_ID = "trustvault-verify-selection";
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 5500;
 

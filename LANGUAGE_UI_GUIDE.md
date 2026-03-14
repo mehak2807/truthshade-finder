@@ -170,7 +170,7 @@ const handleAnalyze = async (text: string) => {
 ```tsx
 <header className="bg-white border-b">
   <div className="flex justify-between items-center p-4">
-    <h1>TruthShade</h1>
+    <h1>TrustVault</h1>
     <LanguageButton 
       currentLanguage={selectedLanguage}
       onLanguageChange={setSelectedLanguage}

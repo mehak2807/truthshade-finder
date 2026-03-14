@@ -318,7 +318,7 @@ const Learn = () => {
           <div className="flex items-center gap-3">
             <img
               src={logo}
-              alt="TruthShade"
+              alt="TrustVault"
               className="h-8 w-8 rounded-md object-cover border border-mint border-opacity-40"
             />
             <div>

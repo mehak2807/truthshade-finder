@@ -2,7 +2,7 @@
 
 ## Overview
 
-This implementation adds comprehensive regional language support to the TruthShade misinformation analysis system. It enables analysis of content in 10 Indian regional languages with localized misinformation detection, automatic translation, and multilingual report generation.
+This implementation adds comprehensive regional language support to the TrustVault misinformation analysis system. It enables analysis of content in 10 Indian regional languages with localized misinformation detection, automatic translation, and multilingual report generation.
 
 ## Architecture
 

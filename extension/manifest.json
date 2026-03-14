@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "TruthShade AI Verifier",
+  "name": "TrustVault AI Verifier",
   "description": "Verify suspicious text or screenshots with AI from anywhere on the web.",
   "version": "1.0.0",
   "action": {
-    "default_title": "TruthShade AI Verifier",
+    "default_title": "TrustVault AI Verifier",
     "default_popup": "popup.html"
   },
   "background": {

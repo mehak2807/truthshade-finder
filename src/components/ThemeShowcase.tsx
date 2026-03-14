@@ -16,7 +16,7 @@ export const ThemeShowcase: React.FC = () => {
           🌌 Cyber Trust Theme
         </h1>
         <p className="text-muted-foreground">
-          Complete theme system for Truthshade Finder
+          Complete theme system for TrustVault Finder
         </p>
       </div>
 
@@ -296,7 +296,7 @@ export const ThemeShowcase: React.FC = () => {
       {/* Footer */}
       <div className="max-w-4xl mx-auto text-center py-8">
         <p className="text-muted-foreground">
-          Cyber Trust Theme © 2024 - Truthshade Finder
+          Cyber Trust Theme © 2024 - TrustVault Finder
         </p>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Your Truthshade Finder UI has been transformed into a dark, neon-glass "cyber trust" style theme. This document summarizes what has been implemented and what's next.
+Your TrustVault Finder UI has been transformed into a dark, neon-glass "cyber trust" style theme. This document summarizes what has been implemented and what's next.
 
 ---
 
@@ -430,5 +430,5 @@ Refer to:
 
 ---
 
-_Cyber Trust Theme v2.0 - Truthshade Finder_
+_Cyber Trust Theme v2.0 - TrustVault Finder_
 _Last Updated: March 14, 2024_
