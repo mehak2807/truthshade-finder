@@ -50,15 +50,56 @@ interface ForwardDetectionResult {
 }
 
 const riskColors = {
-  low: "glass-panel glow-ok border-ok-green/40 text-ok-green",
-  medium: "glass-panel glow-yellow border-warn-yellow/40 text-warn-yellow",
-  high: "glass-panel glow-danger border-danger-red/40 text-danger-red",
+  low: "border border-emerald-300/50 bg-emerald-400/15 text-emerald-200 shadow-[0_0_16px_rgba(74,222,128,0.25)]",
+  medium: "border border-amber-300/50 bg-amber-400/15 text-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.22)]",
+  high: "border border-rose-300/50 bg-rose-400/15 text-rose-200 shadow-[0_0_16px_rgba(251,113,133,0.24)]",
 };
 
 const riskLabels = {
   low: "Low Risk",
   medium: "Medium Risk",
   high: "High Risk",
+};
+
+const getCredibilityTheme = (score: number) => {
+  if (score >= 70) {
+    return {
+      card: "border-cyan-300/60 bg-[linear-gradient(145deg,rgba(16,32,56,0.88),rgba(22,58,88,0.82))] shadow-[0_0_34px_rgba(56,189,248,0.28)]",
+      title: "text-cyan-200",
+      divider: "border-white/15",
+    };
+  }
+  if (score >= 40) {
+    return {
+      card: "border-amber-300/60 bg-[linear-gradient(145deg,rgba(56,41,24,0.88),rgba(86,58,23,0.82))] shadow-[0_0_34px_rgba(245,158,11,0.26)]",
+      title: "text-amber-200",
+      divider: "border-white/15",
+    };
+  }
+  return {
+    card: "border-rose-300/60 bg-[linear-gradient(145deg,rgba(56,27,44,0.9),rgba(88,31,57,0.82))] shadow-[0_0_36px_rgba(251,113,133,0.28)]",
+    title: "text-rose-200",
+    divider: "border-white/15",
+  };
+};
+
+const getCredibilityTier = (score: number) => {
+  if (score >= 70) {
+    return {
+      label: "High Confidence",
+      pill: "border-sky-300/50 bg-sky-400/15 text-sky-200",
+    };
+  }
+  if (score >= 40) {
+    return {
+      label: "Medium Confidence",
+      pill: "border-amber-300/50 bg-amber-400/15 text-amber-200",
+    };
+  }
+  return {
+    label: "Low Confidence",
+    pill: "border-rose-300/50 bg-rose-400/15 text-rose-200",
+  };
 };
 
 type InputMode = "text" | "screenshot" | "url" | "voice";
@@ -137,6 +178,7 @@ const Index = () => {
   const [inputMode, setInputMode] = useState<InputMode>("text");
   const [liveTopicIndex, setLiveTopicIndex] = useState(0);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>("en");
+  const isResultsMode = !!result;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -239,17 +281,15 @@ const Index = () => {
       <div className="container max-w-5xl mx-auto px-4 pt-14 pb-24">
         {/* Hero */}
         <motion.div
-          className="max-w-xl mb-10"
+          className="max-w-2xl mb-10"
           initial={prefersReducedMotion ? {} : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-foreground">
-            Verify any claim,
-            <br />
-            instantly.
+          <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-foreground sm:whitespace-nowrap">
+            Verify any claim, instantly.
           </h1>
-          <p className="mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed">
+          <p className="mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed sm:whitespace-nowrap">
             Paste text, take a screenshot, or enter a URL — our AI analyzes
             credibility and flags misinformation.
           </p>
@@ -278,15 +318,25 @@ const Index = () => {
           transition={{ duration: 0.5, delay: 0.12 }}
         >
           {/* Segmented tabs */}
-          <div className="flex gap-1 mb-3 border border-white/30 glass-panel rounded-lg p-1 w-fit shadow-glow-md">
+          <div
+            className={`flex gap-1 mb-4 rounded-lg p-1 w-fit ${
+              isResultsMode
+                ? "border border-[#8b7bff]/40 bg-[rgba(28,22,48,0.72)] backdrop-blur-md shadow-[0_0_22px_rgba(139,123,255,0.3)]"
+                : "border border-white/30 glass-panel shadow-glow-md"
+            }`}
+          >
             {modeConfig.map((m) => (
               <motion.button
                 key={m.key}
                 onClick={() => setInputMode(m.key)}
                 className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                   inputMode === m.key
-                    ? "neon-button text-cyber-cyan shadow-glow-md"
-                    : "text-muted-foreground hover:text-cyber-cyan hover-glow"
+                    ? isResultsMode
+                      ? "bg-[linear-gradient(135deg,rgba(139,123,255,0.45),rgba(255,138,167,0.38))] text-[#f4ecff] border border-[#c8b9ff]/60 shadow-[0_0_18px_rgba(139,123,255,0.45)]"
+                      : "neon-button text-cyber-cyan shadow-glow-md"
+                    : isResultsMode
+                      ? "text-[#cabff0] hover:text-[#f2e8ff] hover:bg-[#8b7bff]/15"
+                      : "text-muted-foreground hover:text-cyber-cyan hover-glow"
                 }`}
                 whileHover={prefersReducedMotion ? {} : { scale: 1.03 }}
                 whileTap={prefersReducedMotion ? {} : { scale: 0.97 }}
@@ -294,7 +344,11 @@ const Index = () => {
                 {inputMode === m.key && (
                   <motion.span
                     layoutId="tab-pill"
-                    className="absolute inset-0 rounded-md border border-white/40 glass-panel"
+                    className={`absolute inset-0 rounded-md ${
+                      isResultsMode
+                        ? "border border-[#c8b9ff]/55 bg-[rgba(61,46,100,0.35)]"
+                        : "border border-white/40 glass-panel"
+                    }`}
                     transition={{ type: "spring", stiffness: 380, damping: 34 }}
                   />
                 )}
@@ -315,14 +369,26 @@ const Index = () => {
             >
               {/* Screenshot mode — full width */}
               {inputMode === "screenshot" && (
-                <div className="rounded-lg border border-white/30 glass-panel shadow-glow-lg p-4 fade-in">
+                <div
+                  className={`rounded-lg p-4 fade-in ${
+                    isResultsMode
+                      ? "border border-[#8b7bff]/40 bg-[rgba(34,29,58,0.72)] backdrop-blur-md shadow-[0_0_24px_rgba(139,123,255,0.28)]"
+                      : "border border-white/30 glass-panel shadow-glow-lg"
+                  }`}
+                >
                   <ScreenshotFactChecker />
                 </div>
               )}
 
               {/* Voice mode — full width */}
               {inputMode === "voice" && (
-                <div className="rounded-lg border border-white/30 glass-panel shadow-glow-lg fade-in">
+                <div
+                  className={`rounded-lg fade-in ${
+                    isResultsMode
+                      ? "border border-[#8b7bff]/40 bg-[rgba(34,29,58,0.72)] backdrop-blur-md shadow-[0_0_24px_rgba(139,123,255,0.28)]"
+                      : "border border-white/30 glass-panel shadow-glow-lg"
+                  }`}
+                >
                   <VoiceInput
                     onTranscript={handleVoiceTranscript}
                     selectedLanguage={selectedLanguage}
@@ -333,9 +399,15 @@ const Index = () => {
 
               {/* Text / URL mode — two-column on desktop */}
               {(inputMode === "text" || inputMode === "url") && (
-                <div className="grid lg:grid-cols-[1fr_220px] gap-4 items-start">
-                  {/* Left: input panel */}
-                  <div className="rounded-lg border border-white/30 glass-panel shadow-glow-lg overflow-hidden fade-in">
+                <div className="space-y-3">
+                  {/* Input panel */}
+                  <div
+                    className={`rounded-xl overflow-hidden fade-in min-h-[190px] ${
+                      isResultsMode
+                        ? "border border-[#8b7bff]/40 bg-[rgba(34,29,58,0.72)] backdrop-blur-md shadow-[0_0_24px_rgba(139,123,255,0.28)]"
+                        : "border border-white/30 glass-panel shadow-glow-lg"
+                    }`}
+                  >
                     {inputMode === "url" && (
                       <UrlInput
                         onTextExtracted={(text) => {
@@ -347,7 +419,7 @@ const Index = () => {
                       />
                     )}
                     <textarea
-                      className="w-full bg-transparent resize-none p-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-h-[140px]"
+                      className="w-full bg-transparent resize-none px-5 py-4 text-[15px] leading-7 text-foreground placeholder:text-muted-foreground focus:outline-none min-h-[150px]"
                       placeholder={
                         inputMode === "url"
                           ? "Fetched content will appear here..."
@@ -359,12 +431,16 @@ const Index = () => {
                     />
                   </div>
 
-                  {/* Right: Analyze button + skeleton preview card */}
-                  <div className="flex flex-col gap-3">
+                  {/* Analyze action */}
+                  <div>
                     <motion.button
                       onClick={() => handleAnalyze()}
                       disabled={isLoading || isExtracting || !inputText.trim()}
-                      className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-md hover:shadow-lg transition-shadow disabled:opacity-40 disabled:cursor-not-allowed"
+                      className={`w-full min-h-[60px] flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed ${
+                        isResultsMode
+                          ? "border border-[#ffb5c9]/50 bg-[linear-gradient(135deg,rgba(139,123,255,0.5),rgba(255,138,167,0.45))] text-[#fff3f8] shadow-[0_0_24px_rgba(255,138,167,0.35)] hover:opacity-95"
+                          : "bg-primary text-primary-foreground shadow-md hover:shadow-lg transition-shadow"
+                      }`}
                       whileHover={
                         prefersReducedMotion ? {} : { scale: 1.03, y: -1 }
                       }
@@ -386,42 +462,54 @@ const Index = () => {
                         </>
                       )}
                     </motion.button>
+                  </div>
 
-                    {/* Skeleton preview card */}
-                    <div className="rounded-2xl border border-border/70 bg-white/90 shadow-elevated backdrop-blur-sm p-4">
-                      <AnimatePresence mode="wait">
-                        {isLoading ? (
-                          <motion.div
-                            key="loading"
-                            className="space-y-3"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+                  {/* Analysis preview card */}
+                  <div
+                    className={`rounded-2xl p-4 min-h-[150px] ${
+                      isResultsMode
+                        ? "border border-[#f5b971]/45 bg-[rgba(63,49,32,0.7)] backdrop-blur-md shadow-[0_0_22px_rgba(245,185,113,0.22)]"
+                        : "border border-cyber-cyan/35 glass-panel-alt shadow-glow-md"
+                    }`}
+                  >
+                    <AnimatePresence mode="wait">
+                      {isLoading ? (
+                        <motion.div
+                          key="loading"
+                          className="space-y-3"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          <div className="h-3 rounded-full skeleton-shimmer w-3/4" />
+                          <div className="h-3 rounded-full skeleton-shimmer w-1/2" />
+                          <div className="h-3 rounded-full skeleton-shimmer w-5/6" />
+                          <div className="h-3 rounded-full skeleton-shimmer w-2/3" />
+                          <div className="h-3 rounded-full skeleton-shimmer w-4/5" />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="idle"
+                          className="h-full min-h-[96px] flex flex-col items-center justify-center gap-2.5 text-center"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              isResultsMode
+                                ? "bg-[#f5b971]/20 border border-[#f5b971]/45"
+                                : "bg-cyber-cyan/15 border border-cyber-cyan/40"
+                            }`}
                           >
-                            <div className="h-3 rounded-full skeleton-shimmer w-3/4" />
-                            <div className="h-3 rounded-full skeleton-shimmer w-1/2" />
-                            <div className="h-3 rounded-full skeleton-shimmer w-5/6" />
-                            <div className="h-3 rounded-full skeleton-shimmer w-2/3" />
-                            <div className="h-3 rounded-full skeleton-shimmer w-4/5" />
-                          </motion.div>
-                        ) : (
-                          <motion.div
-                            key="idle"
-                            className="flex flex-col items-center justify-center gap-2 py-3 text-center"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                          >
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                              <Search className="w-4 h-4 text-primary/60" />
-                            </div>
-                            <p className="text-xs text-muted-foreground leading-snug">
-                              Analysis preview will appear here
-                            </p>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                            <Search className="w-5 h-5 text-primary/60" />
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-snug">
+                            Analysis preview will appear here
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               )}
@@ -439,10 +527,10 @@ const Index = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.45 }}
             >
-              <div className="border-t border-white/20 pt-10">
+              <div className="border-t border-white/20 pt-8 rounded-2xl px-2 sm:px-3 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_42%),radial-gradient(circle_at_top_right,rgba(251,113,133,0.14),transparent_38%),linear-gradient(180deg,rgba(10,20,36,0.68),rgba(17,24,39,0.52))]">
                 {/* Results header */}
-                <div className="flex flex-wrap items-center gap-2 mb-6">
-                  <h2 className="text-xl font-bold tracking-tight text-gradient-cyber">
+                <div className="flex flex-wrap items-center gap-2 mb-5 px-1">
+                  <h2 className="text-xl font-bold tracking-tight text-[#dbeafe]">
                     Results
                   </h2>
                   {/* Evidence-aware status chip */}
@@ -465,17 +553,26 @@ const Index = () => {
                 </div>
 
                 {/* Result cards — 2-column on desktop (Credibility + Findings) */}
+                {(() => {
+                  const credibilityTheme = getCredibilityTheme(result.overall_score);
+                  const credibilityTier = getCredibilityTier(result.overall_score);
+                  return (
                 <div className="grid lg:grid-cols-2 gap-5">
                   {/* Credibility card */}
                   <motion.div
-                    className="rounded-2xl border border-border/70 bg-white/90 p-5 shadow-elevated backdrop-blur-sm"
+                    className={`rounded-2xl border backdrop-blur-md p-5 min-h-[460px] ${credibilityTheme.card}`}
                     initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0, duration: 0.4 }}
                   >
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                      Credibility
-                    </h3>
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <h3 className={`text-xs font-semibold uppercase tracking-wider ${credibilityTheme.title}`}>
+                        Credibility
+                      </h3>
+                      <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${credibilityTier.pill}`}>
+                        {credibilityTier.label}
+                      </span>
+                    </div>
                     <div className="flex justify-center mb-5">
                       <CredibilityGauge
                         score={result.overall_score}
@@ -483,7 +580,7 @@ const Index = () => {
                         size="lg"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border">
+                    <div className={`grid grid-cols-2 gap-3 pt-4 border-t ${credibilityTheme.divider}`}>
                       <CredibilityGauge
                         score={result.source_score}
                         label="Source"
@@ -499,26 +596,28 @@ const Index = () => {
 
                   {/* Findings card */}
                   <motion.div
-                    className="rounded-2xl border border-border/70 bg-white/90 p-5 shadow-elevated backdrop-blur-sm overflow-auto max-h-[460px]"
+                    className="rounded-2xl border border-fuchsia-300/55 bg-[linear-gradient(145deg,rgba(47,25,49,0.88),rgba(84,35,62,0.82))] backdrop-blur-md p-5 shadow-[0_0_30px_rgba(217,70,239,0.24)] overflow-auto min-h-[460px] max-h-[460px]"
                     initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.08, duration: 0.4 }}
                   >
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                    <h3 className="text-xs font-semibold text-fuchsia-200 uppercase tracking-wider mb-4">
                       Findings
                     </h3>
                     <AnalysisPanel findings={result.findings} />
                   </motion.div>
                 </div>
+                  );
+                })()}
 
                 {/* Heatmap — full width */}
                 <motion.div
-                  className="mt-5 rounded-2xl border border-border/70 bg-white/90 p-5 shadow-elevated backdrop-blur-sm overflow-auto max-h-[460px]"
+                  className="mt-5 rounded-2xl border border-violet-300/50 bg-[linear-gradient(145deg,rgba(30,30,58,0.88),rgba(47,36,70,0.82))] backdrop-blur-md p-5 shadow-[0_0_28px_rgba(167,139,250,0.22)] overflow-auto min-h-[240px] max-h-[460px]"
                   initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.16, duration: 0.4 }}
                 >
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                  <h3 className="text-xs font-semibold text-violet-200 uppercase tracking-wider mb-4">
                     Heatmap
                   </h3>
                   <HeatmapDemo segments={result.segments} />

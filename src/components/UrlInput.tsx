@@ -24,7 +24,13 @@ const UrlInput = ({ onTextExtracted, isExtracting, setIsExtracting }: UrlInputPr
         body: { url: trimmed },
       });
 
-      if (fnError) throw new Error(fnError.message);
+      if (fnError) {
+        const raw = fnError.message || "";
+        const friendly = raw.includes("non-2xx")
+          ? "This site blocked automatic extraction. Try another article URL, or paste the text directly."
+          : raw;
+        throw new Error(friendly);
+      }
       if (data?.error) throw new Error(data.error);
       if (data?.text) {
         onTextExtracted(data.text);

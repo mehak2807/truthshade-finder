@@ -8,9 +8,15 @@ interface CredibilityGaugeProps {
 
 const CredibilityGauge = ({ score, label, size = "lg" }: CredibilityGaugeProps) => {
   const getColor = () => {
-    if (score >= 70) return { text: "text-trust-verified", stroke: "stroke-trust-verified", bg: "bg-trust-verified/10" };
-    if (score >= 40) return { text: "text-trust-questionable", stroke: "stroke-trust-questionable", bg: "bg-trust-questionable/10" };
-    return { text: "text-trust-misinformation", stroke: "stroke-trust-misinformation", bg: "bg-trust-misinformation/10" };
+    if (score >= 70) return { text: "text-sky-300", stroke: "stroke-sky-300", bg: "bg-sky-300/10" };
+    if (score >= 40) return { text: "text-amber-300", stroke: "stroke-amber-300", bg: "bg-amber-300/10" };
+    return { text: "text-rose-300", stroke: "stroke-rose-300", bg: "bg-rose-300/10" };
+  };
+
+  const getGlow = () => {
+    if (score >= 70) return "shadow-[0_0_24px_rgba(125,211,252,0.28)]";
+    if (score >= 40) return "shadow-[0_0_24px_rgba(252,211,77,0.24)]";
+    return "shadow-[0_0_24px_rgba(251,113,133,0.24)]";
   };
 
   // Labels reflect a confidence/credibility estimate, not a binary truth verdict.
@@ -21,6 +27,7 @@ const CredibilityGauge = ({ score, label, size = "lg" }: CredibilityGaugeProps) 
   };
 
   const colors = getColor();
+  const glow = getGlow();
   const isLarge = size === "lg";
   const radius = isLarge ? 52 : 36;
   const strokeWidth = isLarge ? 6 : 5;
@@ -32,11 +39,15 @@ const CredibilityGauge = ({ score, label, size = "lg" }: CredibilityGaugeProps) 
   return (
     <div className="flex flex-col items-center gap-2">
       <div className={`relative ${isLarge ? "w-32 h-32" : "w-20 h-20"}`}>
+        <div
+          className={`absolute inset-0 rounded-full ${colors.bg} ${glow}`}
+          aria-hidden="true"
+        />
         <svg className="w-full h-full -rotate-90" viewBox={`0 0 ${viewBox} ${viewBox}`}>
           <circle
             cx={center} cy={center} r={radius}
             fill="none" strokeWidth={strokeWidth}
-            className="stroke-muted"
+            className="stroke-white/25"
           />
           <motion.circle
             cx={center} cy={center} r={radius}
@@ -63,7 +74,7 @@ const CredibilityGauge = ({ score, label, size = "lg" }: CredibilityGaugeProps) 
           )}
         </div>
       </div>
-      <span className={`${isLarge ? "text-xs" : "text-[11px]"} text-muted-foreground font-medium`}>{label}</span>
+      <span className={`${isLarge ? "text-xs" : "text-[11px]"} text-foreground/85 font-medium`}>{label}</span>
     </div>
   );
 };

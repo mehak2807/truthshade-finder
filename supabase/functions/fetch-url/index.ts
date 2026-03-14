@@ -4,6 +4,66 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const MAX_TEXT_LENGTH = 5000;
+
+function extractTextFromHtml(raw: string): string {
+  return raw
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "")
+    .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, "")
+    .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, "")
+    .replace(/<\/(p|div|h[1-6]|li|br|tr|blockquote)>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n\s*\n/g, "\n\n")
+    .trim();
+}
+
+async function fetchPageText(url: string): Promise<string> {
+  const direct = await fetch(url, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; TrustVault/1.0; +https://trustvault.app)",
+      "Accept": "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Cache-Control": "no-cache",
+      "Pragma": "no-cache",
+    },
+  });
+
+  if (direct.ok) {
+    const body = await direct.text();
+    return extractTextFromHtml(body);
+  }
+
+  // Fallback reader endpoint handles many anti-bot/news pages better.
+  const noScheme = url.replace(/^https?:\/\//i, "");
+  const fallbackUrl = `https://r.jina.ai/http://${noScheme}`;
+  const fallback = await fetch(fallbackUrl, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; TrustVault/1.0)",
+      "Accept": "text/plain,text/html;q=0.9,*/*;q=0.8",
+    },
+  });
+
+  if (!fallback.ok) {
+    throw new Error(
+      `Could not fetch this URL (direct status ${direct.status}, fallback status ${fallback.status}).`
+    );
+  }
+
+  const fallbackBody = await fallback.text();
+  return extractTextFromHtml(fallbackBody);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -23,49 +83,22 @@ Deno.serve(async (req) => {
       formattedUrl = `https://${formattedUrl}`;
     }
 
-    console.log("Fetching URL:", formattedUrl);
-
-    const response = await fetch(formattedUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; TrustVault/1.0)",
-        "Accept": "text/html,application/xhtml+xml,text/plain",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch URL (status ${response.status})`);
+    try {
+      new URL(formattedUrl);
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Please enter a valid URL." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const html = await response.text();
+    console.log("Fetching URL:", formattedUrl);
 
-    // Extract text content from HTML
-    // Remove script/style tags and their content
-    let text = html
-      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-      .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "")
-      .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, "")
-      .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, "")
-      // Replace block elements with newlines
-      .replace(/<\/(p|div|h[1-6]|li|br|tr|blockquote)>/gi, "\n")
-      .replace(/<br\s*\/?>/gi, "\n")
-      // Remove remaining HTML tags
-      .replace(/<[^>]+>/g, " ")
-      // Decode HTML entities
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&nbsp;/g, " ")
-      // Clean up whitespace
-      .replace(/[ \t]+/g, " ")
-      .replace(/\n\s*\n/g, "\n\n")
-      .trim();
+    let text = await fetchPageText(formattedUrl);
 
     // Truncate to ~5000 chars for analysis
-    if (text.length > 5000) {
-      text = text.slice(0, 5000) + "...";
+    if (text.length > MAX_TEXT_LENGTH) {
+      text = text.slice(0, MAX_TEXT_LENGTH) + "...";
     }
 
     if (!text || text.length < 20) {

@@ -19,15 +19,15 @@ const iconMap = {
 };
 
 const typeStyles = {
-  verified: "border-green-500/40 glass-panel glow-green",
-  questionable: "border-amber-500/40 glass-panel glow-amber",
-  misinformation: "border-red-500/40 glass-panel glow-red",
+  verified: "border-cyan-300/45 bg-cyan-500/10 backdrop-blur-md shadow-[0_0_18px_rgba(34,211,238,0.22)]",
+  questionable: "border-amber-300/45 bg-amber-500/10 backdrop-blur-md shadow-[0_0_18px_rgba(245,158,11,0.22)]",
+  misinformation: "border-rose-300/45 bg-rose-500/10 backdrop-blur-md shadow-[0_0_18px_rgba(251,113,133,0.24)]",
 };
 
 const iconColors = {
-  verified: "text-green-400",
-  questionable: "text-amber-400",
-  misinformation: "text-red-400",
+  verified: "text-cyan-300",
+  questionable: "text-amber-300",
+  misinformation: "text-rose-300",
 };
 
 const AnalysisPanel = ({ findings }: AnalysisPanelProps) => {
@@ -49,7 +49,7 @@ const AnalysisPanel = ({ findings }: AnalysisPanelProps) => {
               <h4 className="font-semibold text-sm text-foreground">
                 {finding.title}
               </h4>
-              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+              <p className="text-xs text-foreground/80 mt-0.5 leading-relaxed">
                 {finding.description}
               </p>
             </div>
