@@ -1,17 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
+  AlertTriangle,
+  Ban,
+  ClipboardPaste,
   Flame,
   Home,
+  Link2,
   Loader2,
   Mic,
+  Phone,
   Search,
+  Share2,
   Scan,
+  ShieldAlert,
   Type,
   Globe,
   BookOpen,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import CredibilityGauge from "@/components/CredibilityGauge";
@@ -26,6 +33,10 @@ import LanguageBar from "@/components/LanguageBar";
 import { type LanguageCode } from "@/config/languages";
 import logo from "@/assets/trustvault-logo.png";
 import { getVerificationStatus } from "@/lib/verificationHelpers";
+import {
+  detectIndiaScamShield,
+  getIndiaScamShieldUiLabels,
+} from "@/lib/indiaScamShield";
 
 interface AnalysisResult {
   overall_score: number;
@@ -59,6 +70,12 @@ const riskLabels = {
   low: "Low Risk",
   medium: "Medium Risk",
   high: "High Risk",
+};
+
+const scamShieldRiskStyles = {
+  low: "border-emerald-300/45 bg-emerald-400/10 text-emerald-100",
+  medium: "border-amber-300/50 bg-amber-400/15 text-amber-100",
+  high: "border-rose-300/55 bg-rose-500/15 text-rose-100",
 };
 
 const getCredibilityTheme = (score: number) => {
@@ -168,17 +185,28 @@ const hotTopics = [
 
 const Index = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const prefersReducedMotion = useReducedMotion();
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [isClipboardImporting, setIsClipboardImporting] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [forwardDetection, setForwardDetection] =
     useState<ForwardDetectionResult | null>(null);
   const [inputMode, setInputMode] = useState<InputMode>("text");
   const [liveTopicIndex, setLiveTopicIndex] = useState(0);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>("en");
+  const [shareSourceLabel, setShareSourceLabel] = useState<string | null>(null);
   const isResultsMode = !!result;
+  const scamShield = useMemo(
+    () => detectIndiaScamShield(inputText, selectedLanguage),
+    [inputText, selectedLanguage],
+  );
+  const scamUiLabels = useMemo(
+    () => getIndiaScamShieldUiLabels(selectedLanguage),
+    [selectedLanguage],
+  );
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -187,12 +215,139 @@ const Index = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const decodeShareParam = (value: string | null) => {
+    if (!value) return "";
+    return decodeURIComponent(value).replace(/\+/g, " ").trim();
+  };
+
+  const fetchAndExtractSharedUrl = async (rawUrl: string) => {
+    setIsExtracting(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("fetch-url", {
+        body: { url: rawUrl },
+      });
+
+      if (fnError) {
+        const raw = fnError.message || "";
+        const friendly = raw.includes("non-2xx")
+          ? "This site blocked automatic extraction. Try pasting the message text directly."
+          : raw;
+        throw new Error(friendly);
+      }
+
+      if (data?.error) throw new Error(data.error);
+      if (!data?.text) throw new Error("No readable article text found at this link.");
+      return data.text as string;
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
+  useEffect(() => {
+    const fromText =
+      decodeShareParam(searchParams.get("text")) ||
+      decodeShareParam(searchParams.get("message")) ||
+      decodeShareParam(searchParams.get("caption")) ||
+      decodeShareParam(searchParams.get("sharedText"));
+
+    const fromUrl =
+      decodeShareParam(searchParams.get("url")) ||
+      decodeShareParam(searchParams.get("link")) ||
+      decodeShareParam(searchParams.get("u"));
+
+    if (!fromText && !fromUrl) return;
+
+    const source = decodeShareParam(searchParams.get("source")) || "Shared App";
+
+    const importSharedPayload = async () => {
+      try {
+        if (fromText) {
+          setInputMode("text");
+          setInputText(fromText);
+          setShareSourceLabel(source);
+          toast.success("Shared content imported. Ready to verify.");
+          return;
+        }
+
+        if (fromUrl) {
+          setInputMode("url");
+          const extractedText = await fetchAndExtractSharedUrl(fromUrl);
+          setInputText(extractedText);
+          setShareSourceLabel(source);
+          toast.success("Shared link imported and extracted. Ready to verify.");
+        }
+      } catch (err: any) {
+        toast.error(err?.message || "Unable to import shared content.");
+      } finally {
+        const cleaned = new URLSearchParams(searchParams);
+        ["text", "message", "caption", "sharedText", "url", "link", "u", "source"].forEach(
+          (key) => cleaned.delete(key),
+        );
+        setSearchParams(cleaned, { replace: true });
+      }
+    };
+
+    importSharedPayload();
+  }, [searchParams, setSearchParams]);
+
+  const handleClipboardImport = async () => {
+    if (!navigator.clipboard?.readText) {
+      toast.error("Clipboard access is not available in this browser.");
+      return;
+    }
+
+    setIsClipboardImporting(true);
+    try {
+      const copied = (await navigator.clipboard.readText()).trim();
+      if (!copied) {
+        toast.error("Clipboard is empty. Copy a message or link first.");
+        return;
+      }
+
+      const looksLikeUrl = /^https?:\/\//i.test(copied);
+      if (looksLikeUrl) {
+        setInputMode("url");
+        const extractedText = await fetchAndExtractSharedUrl(copied);
+        setInputText(extractedText);
+        setShareSourceLabel("Clipboard Link");
+        toast.success("Link imported from clipboard.");
+        return;
+      }
+
+      setInputMode("text");
+      setInputText(copied);
+      setShareSourceLabel("Clipboard Message");
+      toast.success("Message imported from clipboard.");
+    } catch (err: any) {
+      toast.error(err?.message || "Could not read clipboard.");
+    } finally {
+      setIsClipboardImporting(false);
+    }
+  };
+
+  const handleCopyShareLinkTemplate = async () => {
+    const base = window.location.origin;
+    const template = `${base}/analyze?source=WhatsApp&text=`;
+    try {
+      await navigator.clipboard.writeText(template);
+      toast.success("Share-to-Verify link template copied.");
+    } catch {
+      toast.error("Could not copy the template link.");
+    }
+  };
+
   const handleAnalyze = async (overrideText?: string) => {
     const trimmed = (overrideText ?? inputText).trim();
     if (!trimmed) {
       toast.error("Please enter some text to analyze.");
       return;
     }
+
+    const shieldCheck = detectIndiaScamShield(trimmed, selectedLanguage);
+    if (shieldCheck.detected && shieldCheck.riskLevel === "high") {
+      toast.error("India Scam Shield: High-risk scam pattern detected. Avoid clicking links and report to 1930.");
+    }
+
     setIsLoading(true);
     setResult(null);
     setForwardDetection(null);
@@ -308,6 +463,61 @@ const Index = () => {
             showQuickSelect={true}
             maxQuickSelectItems={5}
           />
+        </motion.div>
+
+        <motion.div
+          className="mb-6 rounded-2xl border border-cyber-cyan/35 bg-[linear-gradient(145deg,rgba(14,24,42,0.84),rgba(26,36,58,0.78))] p-4 shadow-[0_0_26px_rgba(56,189,248,0.18)]"
+          initial={prefersReducedMotion ? {} : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.09 }}
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full border border-cyan-300/45 bg-cyan-300/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-100">
+                <Share2 className="h-3.5 w-3.5" />
+                Share to Verify
+              </p>
+              <h3 className="mt-2 text-base font-semibold text-cyan-50">
+                WhatsApp and Instagram message check in one tap
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-cyan-100/80">
+                Copy any forwarded text or link, then import it here for an instant trust verdict.
+              </p>
+              {shareSourceLabel && (
+                <p className="mt-2 text-[11px] font-semibold text-emerald-200">
+                  Imported from: {shareSourceLabel}
+                </p>
+              )}
+            </div>
+
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+              <button
+                onClick={handleClipboardImport}
+                disabled={isClipboardImporting || isExtracting}
+                className="inline-flex min-w-[170px] items-center justify-center gap-2 rounded-lg border border-cyan-300/45 bg-cyan-300/15 px-3 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-300/20 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isClipboardImporting ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Importing...
+                  </>
+                ) : (
+                  <>
+                    <ClipboardPaste className="h-3.5 w-3.5" />
+                    Import from Clipboard
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleCopyShareLinkTemplate}
+                className="inline-flex min-w-[170px] items-center justify-center gap-2 rounded-lg border border-fuchsia-300/45 bg-fuchsia-300/10 px-3 py-2 text-xs font-semibold text-fuchsia-100 hover:bg-fuchsia-300/20"
+              >
+                <Link2 className="h-3.5 w-3.5" />
+                Copy Share Link Template
+              </button>
+            </div>
+          </div>
         </motion.div>
 
         {/* Input section */}
@@ -463,6 +673,80 @@ const Index = () => {
                       )}
                     </motion.button>
                   </div>
+
+                  {inputText.trim() && scamShield.detected && (
+                    <div
+                      className={`rounded-2xl border p-4 ${
+                        scamShield.riskLevel === "high"
+                          ? "border-rose-300/55 bg-[linear-gradient(145deg,rgba(71,26,41,0.82),rgba(94,33,56,0.76))]"
+                          : "border-amber-300/55 bg-[linear-gradient(145deg,rgba(72,54,26,0.82),rgba(98,74,35,0.76))]"
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
+                            <ShieldAlert className="h-3.5 w-3.5" />
+                            {scamUiLabels.modeBadge}
+                          </p>
+                          <h4 className="mt-2 text-sm font-semibold text-white">
+                            {scamShield.matches[0]?.title || scamUiLabels.potentialPatternDetected}
+                          </h4>
+                          <p className="mt-1 text-[11px] text-white/80">{scamUiLabels.modeHeading}</p>
+                          <p className="mt-1 text-xs leading-relaxed text-white/85">
+                            {scamShield.advisory}
+                          </p>
+                        </div>
+
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${scamShieldRiskStyles[scamShield.riskLevel]}`}
+                        >
+                          {scamShield.riskLevel === "high"
+                            ? scamUiLabels.scamRiskHigh
+                            : scamShield.riskLevel === "medium"
+                              ? scamUiLabels.scamRiskMedium
+                              : scamUiLabels.scamRiskLow}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        {scamShield.urgentActions.slice(0, 4).map((step) => (
+                          <div
+                            key={step}
+                            className="rounded-lg border border-white/20 bg-black/20 px-3 py-2 text-xs text-white/90"
+                          >
+                            • {step}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <a
+                          href="tel:1930"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200/50 bg-rose-400/20 px-3 py-2 text-xs font-semibold text-rose-100 hover:bg-rose-400/30"
+                        >
+                          <Phone className="h-3.5 w-3.5" />
+                          {scamUiLabels.call1930}
+                        </a>
+                        <a
+                          href="https://cybercrime.gov.in"
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-200/50 bg-cyan-400/20 px-3 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-400/30"
+                        >
+                          <AlertTriangle className="h-3.5 w-3.5" />
+                          {scamUiLabels.reportOnline}
+                        </a>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-white/40 bg-white/10 px-3 py-2 text-xs font-semibold text-white/90"
+                          onClick={() => toast.info(scamUiLabels.blockSenderHint)}
+                        >
+                          <Ban className="h-3.5 w-3.5" />
+                          {scamUiLabels.blockSender}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Analysis preview card */}
                   <div
@@ -673,6 +957,79 @@ const Index = () => {
                       {forwardDetection.recommended_action ||
                         "Do not forward this message."}
                     </p>
+                  </motion.div>
+                )}
+
+                {scamShield.detected && (
+                  <motion.div
+                    className="mt-5 rounded-2xl border border-rose-300/45 bg-[linear-gradient(145deg,rgba(66,25,41,0.8),rgba(80,31,52,0.74))] p-4"
+                    initial={prefersReducedMotion ? {} : { opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.38, duration: 0.4 }}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-sm font-bold text-rose-100">
+                        {scamUiLabels.verdictTitle}
+                      </h3>
+                      <span
+                        className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${scamShieldRiskStyles[scamShield.riskLevel]}`}
+                      >
+                        {scamShield.riskLevel === "high"
+                          ? scamUiLabels.scamRiskHigh
+                          : scamShield.riskLevel === "medium"
+                            ? scamUiLabels.scamRiskMedium
+                            : scamUiLabels.scamRiskLow}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-xs leading-relaxed text-rose-100/90">
+                      {scamShield.advisory}
+                    </p>
+
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      {scamShield.matches.map((match) => (
+                        <div
+                          key={match.category}
+                          className="rounded-lg border border-rose-200/25 bg-black/20 px-3 py-3"
+                        >
+                          <p className="text-xs font-semibold text-rose-100">
+                            {match.title}
+                          </p>
+                          <p className="mt-1 text-[11px] text-rose-100/80">
+                            {scamUiLabels.confidence}: {match.confidence}
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {match.matchedSignals.slice(0, 3).map((signal) => (
+                              <span
+                                key={signal}
+                                className="rounded-full border border-rose-200/35 bg-rose-200/10 px-2 py-0.5 text-[10px] text-rose-100/90"
+                              >
+                                {signal}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <a
+                        href="tel:1930"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200/50 bg-rose-400/20 px-3 py-2 text-xs font-semibold text-rose-100 hover:bg-rose-400/30"
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                        {scamUiLabels.emergencyReport}
+                      </a>
+                      <a
+                        href="https://cybercrime.gov.in"
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-200/50 bg-cyan-400/20 px-3 py-2 text-xs font-semibold text-cyan-100 hover:bg-cyan-400/30"
+                      >
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        {scamUiLabels.fileCyberComplaint}
+                      </a>
+                    </div>
                   </motion.div>
                 )}
 
