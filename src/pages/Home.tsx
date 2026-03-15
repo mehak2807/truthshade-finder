@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import logo from "@/assets/trustvault-logo.png";
 import { UserProfileIcon } from "@/components/UserProfileIcon";
+import { VerifiedNewsButton } from "@/components/VerifiedNewsButton";
 
 const indiaStatsCards = [
   {
@@ -126,6 +127,7 @@ const Home = () => {
               </span>
             </div>
             <div className="flex items-center gap-2">
+              <VerifiedNewsButton />
               <button
                 onClick={() => navigate("/learn")}
                 className="button-ghost rounded-full px-4 py-2 text-[12px] font-semibold flex items-center gap-1.5"

@@ -12,6 +12,7 @@ import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
 import Account from "./pages/Account.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
+import VerifiedNewsPage from "./pages/VerifiedNewsPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Learn />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/verified-news"
+              element={
+                <ProtectedRoute>
+                  <VerifiedNewsPage />
                 </ProtectedRoute>
               }
             />
