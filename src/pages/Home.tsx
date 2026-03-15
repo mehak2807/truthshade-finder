@@ -15,6 +15,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import logo from "@/assets/trustvault-logo.png";
+import { UserProfileIcon } from "@/components/UserProfileIcon";
 
 const indiaStatsCards = [
   {
@@ -138,6 +139,7 @@ const Home = () => {
               >
                 Get started
               </button>
+              <UserProfileIcon />
             </div>
           </div>
         </header>
@@ -194,7 +196,8 @@ const Home = () => {
               </h3>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Indicative awareness metrics and response contacts for India-focused verification workflows.
+              Indicative awareness metrics and response contacts for
+              India-focused verification workflows.
             </p>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -206,8 +209,12 @@ const Home = () => {
                   <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-md border border-mint border-opacity-30 bg-mint bg-opacity-10">
                     <BarChart3 className="h-4 w-4 text-mint" />
                   </div>
-                  <p className="text-xl font-extrabold text-mint">{stat.metric}</p>
-                  <p className="mt-1 text-xs font-semibold text-foreground">{stat.title}</p>
+                  <p className="text-xl font-extrabold text-mint">
+                    {stat.metric}
+                  </p>
+                  <p className="mt-1 text-xs font-semibold text-foreground">
+                    {stat.title}
+                  </p>
                   <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
                     {stat.context}
                   </p>
@@ -231,7 +238,9 @@ const Home = () => {
                     <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-cyber-cyan">
                       <ImageIcon className="h-3.5 w-3.5" /> Visual Pattern
                     </p>
-                    <h4 className="mt-1 text-sm font-semibold text-foreground">{item.title}</h4>
+                    <h4 className="mt-1 text-sm font-semibold text-foreground">
+                      {item.title}
+                    </h4>
                     <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
                       {item.note}
                     </p>
@@ -251,8 +260,12 @@ const Home = () => {
                     <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-cyber-cyan">
                       <Phone className="h-3.5 w-3.5" /> Cyber Helpline
                     </p>
-                    <h4 className="mt-1 text-sm font-semibold text-foreground">{line.name}</h4>
-                    <p className="mt-1 text-base font-bold text-mint">{line.value}</p>
+                    <h4 className="mt-1 text-sm font-semibold text-foreground">
+                      {line.name}
+                    </h4>
+                    <p className="mt-1 text-base font-bold text-mint">
+                      {line.value}
+                    </p>
                     <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
                       {line.description}
                     </p>
@@ -271,7 +284,9 @@ const Home = () => {
             </div>
 
             <div className="mt-5 rounded-lg border border-white/20 glass-panel p-3">
-              <p className="text-xs font-semibold text-cyber-cyan">Sources & Official References</p>
+              <p className="text-xs font-semibold text-cyber-cyan">
+                Sources & Official References
+              </p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {indiaSourceNotes.map((source) => (
                   <a
@@ -281,7 +296,9 @@ const Home = () => {
                     rel="noreferrer noopener"
                     className="rounded-lg border border-white/20 glass-panel-alt px-3 py-3 hover-glow"
                   >
-                    <p className="text-xs font-semibold text-foreground">{source.name}</p>
+                    <p className="text-xs font-semibold text-foreground">
+                      {source.name}
+                    </p>
                     <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
                       {source.detail}
                     </p>
