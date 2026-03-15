@@ -102,9 +102,7 @@ const VerifiedNewsPage: React.FC = () => {
                 <h1 className="text-sm font-bold text-gradient-cyber">
                   Verified Truth Hub
                 </h1>
-                <p className="text-xs text-slate-400">
-                  Official fact-checks from PIB
-                </p>
+                <p className="text-xs text-slate-400">Official fact-checks</p>
               </div>
             </div>
 
@@ -385,8 +383,8 @@ const VerifiedNewsPage: React.FC = () => {
       {/* Footer Info */}
       <div className="mt-6 text-center">
         <p className="text-xs text-slate-500">
-          Data sourced from PIB Fact Check • Auto-refreshes every 5 minutes •
-          Last updated {getTimeElapsed()}
+          Data sourced from TrustVault • Auto-refreshes every 5 minutes • Last
+          updated {getTimeElapsed()}
         </p>
       </div>
     </div>

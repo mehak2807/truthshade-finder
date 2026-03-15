@@ -169,19 +169,26 @@ const Home = () => {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-              <button
+              <motion.button
                 onClick={() => navigate("/analyze")}
-                className="neon-button inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold shadow-glow-lg"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                className="relative overflow-hidden rounded-full bg-gradient-to-r from-mint via-cyber-cyan to-mint px-8 py-4 text-sm font-bold text-dark shadow-glow-lg transition-all duration-300 hover:shadow-xl hover:shadow-mint/50 group"
               >
-                Request Access
-                <ArrowRight className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => navigate("/analyze")}
-                className="button-ghost inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold"
-              >
-                Try Live Analyzer
-              </button>
+                {/* Animated background glow */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
+
+                {/* Button content */}
+                <div className="relative flex items-center justify-center gap-2">
+                  <span className="font-extrabold tracking-wide">
+                    Launch Live Analyzer
+                  </span>
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </div>
+
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 -top-2 h-full w-full translate-x-full transform bg-gradient-to-r from-transparent via-white to-transparent opacity-30 group-hover:translate-x-0 transition-transform duration-1000" />
+              </motion.button>
             </div>
           </motion.div>
 
