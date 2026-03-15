@@ -179,6 +179,41 @@ function captureTextFromArea(x, y, width, height) {
   }
 }
 
+function extractPageContent() {
+  // Remove script, style, and other non-content elements
+  const clone = document.body.cloneNode(true);
+  const selectors = ["script", "style", "nav", "footer", "aside", ".navbar", ".sidebar"];
+  selectors.forEach((sel) => {
+    clone.querySelectorAll(sel).forEach((el) => el.remove());
+  });
+
+  // Get main content from common article/content containers
+  const contentSelectors = ["article", "main", "[role='main']", ".content", ".post", ".article"];
+  let content = "";
+  let found = false;
+
+  for (const selector of contentSelectors) {
+    const elem = clone.querySelector(selector);
+    if (elem) {
+      content = elem.textContent || "";
+      found = true;
+      break;
+    }
+  }
+
+  // If no main container found, use body text
+  if (!found) {
+    content = clone.textContent || "";
+  }
+
+  // Clean up the text
+  return content
+    .replace(/\s+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+    .substring(0, 3000); // Limit to 3000 chars for analysis
+}
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "GET_SELECTED_TEXT") {
     updateSelection();
@@ -187,5 +222,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     isSnipMode = true;
     createSnipOverlay();
     sendResponse({ success: true });
+  } else if (message?.type === "GET_PAGE_TEXT") {
+    const pageText = extractPageContent();
+    sendResponse({ text: pageText, success: !!pageText });
   }
 });

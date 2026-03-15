@@ -6,6 +6,7 @@ const languageSelect = document.getElementById("languageSelect");
 const preview = document.getElementById("preview");
 const checkBtn = document.getElementById("checkBtn");
 const detectBtn = document.getElementById("detectBtn");
+const pageBtn = document.getElementById("pageBtn");
 const loading = document.getElementById("loading");
 const resultCard = document.getElementById("resultCard");
 const scoreText = document.getElementById("scoreText");
@@ -221,6 +222,26 @@ async function initSelectedText() {
   }
 }
 
+async function initPageContent() {
+  try {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const activeTab = tabs[0];
+
+    if (activeTab?.id && !textInput.value) {
+      // Only auto-populate if textarea is empty
+      const response = await chrome.tabs.sendMessage(activeTab.id, { type: "GET_PAGE_TEXT" });
+      
+      if (response?.success && response.text && response.text.length > 50) {
+        textInput.value = response.text;
+        setStatus("Page content loaded", "ok");
+      }
+    }
+  } catch (error) {
+    // Silently fail for page content - it's optional
+    console.log("Could not auto-load page content:", error);
+  }
+}
+
 async function initLastResult() {
   const response = await chrome.runtime.sendMessage({ type: "GET_LAST_RESULT" });
   if (response?.ok && response.result) {
@@ -375,10 +396,46 @@ detectBtn.addEventListener("click", () => {
   void startSnipMode();
 });
 
+async function analyzePageContent() {
+  try {
+    setStatus("Extracting page content...", "idle");
+    
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const activeTab = tabs[0];
+
+    if (!activeTab?.id) {
+      setStatus("No active tab", "warn");
+      return;
+    }
+
+    const response = await chrome.tabs.sendMessage(activeTab.id, { type: "GET_PAGE_TEXT" });
+    
+    if (response?.success && response.text) {
+      textInput.value = response.text;
+      setStatus("Page content extracted!", "ok");
+      // Auto-run verification
+      await runVerification();
+    } else {
+      setStatus("Could not extract page text", "warn");
+    }
+  } catch (error) {
+    setStatus("Failed to analyze page", "warn");
+    warningText.hidden = false;
+    warningText.textContent = error instanceof Error ? error.message : "Could not extract text from this page.";
+    resultCard.hidden = false;
+    console.error("Page analysis error:", error);
+  }
+}
+
+pageBtn.addEventListener("click", () => {
+  void analyzePageContent();
+});
+
 languageSelect.addEventListener("change", () => {
   void saveSelectedLanguage();
 });
 
 void initSelectedText();
+void initPageContent();
 void initLastResult();
 void initLanguagePreference();
