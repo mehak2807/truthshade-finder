@@ -29,7 +29,12 @@ const Signup = () => {
   };
 
   const validateForm = () => {
-    if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
+    if (
+      !formData.fullName ||
+      !formData.email ||
+      !formData.password ||
+      !formData.confirmPassword
+    ) {
       setLocalError("Please fill in all fields");
       return false;
     }
@@ -75,10 +80,13 @@ const Signup = () => {
         duration: 3000,
       });
 
-      // Auto signin successful, redirect to analyze
-      navigate("/analyze");
+      // Redirect to homepage
+      navigate("/");
     } catch (err: any) {
-      setLocalError(err.message || "Failed to create account. Please try again.");
+      console.error("Sign up error:", err);
+      setLocalError(
+        err.message || "Failed to create account. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -108,8 +116,12 @@ const Signup = () => {
             alt="TrustVault"
             className="h-16 mx-auto mb-4 drop-shadow-lg"
           />
-          <h1 className="text-3xl font-bold text-white mb-2">Join TrustVault</h1>
-          <p className="text-gray-400">Create your account instantly, no verification needed</p>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Join TrustVault
+          </h1>
+          <p className="text-gray-400">
+            Create your account instantly, no verification needed
+          </p>
         </div>
 
         {/* Signup Card */}
@@ -133,7 +145,10 @@ const Signup = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name Input */}
             <div className="space-y-2">
-              <label htmlFor="fullName" className="block text-sm font-medium text-white">
+              <label
+                htmlFor="fullName"
+                className="block text-sm font-medium text-white"
+              >
                 Full Name
               </label>
               <Input
@@ -150,7 +165,10 @@ const Signup = () => {
 
             {/* Email Input */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-white">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-white"
+              >
                 Email Address
               </label>
               <Input
@@ -167,7 +185,10 @@ const Signup = () => {
 
             {/* Password Input */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-white">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-white"
+              >
                 Password
               </label>
               <Input
@@ -180,14 +201,15 @@ const Signup = () => {
                 className="bg-white/5 border-white/20 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-purple-500"
                 disabled={isLoading}
               />
-              <p className="text-xs text-gray-400">
-                Minimum 6 characters
-              </p>
+              <p className="text-xs text-gray-400">Minimum 6 characters</p>
             </div>
 
             {/* Confirm Password Input */}
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-white">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-white"
+              >
                 Confirm Password
               </label>
               <Input
@@ -245,18 +267,6 @@ const Signup = () => {
             </div>
           </form>
         </div>
-
-        {/* Demo Credentials Info */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-center"
-        >
-          <p className="text-xs text-green-300">
-            ✨ No email verification needed - instant account access!
-          </p>
-        </motion.div>
       </motion.div>
     </div>
   );

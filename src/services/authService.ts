@@ -29,23 +29,42 @@ class AuthService {
           data: {
             full_name: fullName,
           },
-          emailRedirectTo: undefined, // Disable email verification
+          // Don't redirect for email verification
+          emailRedirectTo: undefined,
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message || "Sign up failed");
+      }
 
-      // Auto-signin after signup (no email verification needed)
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Check if user was created but needs email verification
+      if (data?.user && !data.user.email_confirmed_at) {
+        // Try to auto-signin anyway - Supabase might allow this depending on auth settings
+        try {
+          const { data: signInData, error: signInError } =
+            await supabase.auth.signInWithPassword({
+              email,
+              password,
+            });
 
-      if (signInError) throw signInError;
+          if (signInError) {
+            // Return the session from signup if auto-signin fails
+            return { data: data, error: null };
+          }
 
-      return { data: signInData, error: null };
+          return { data: signInData, error: null };
+        } catch (signInErr) {
+          // Return signup data even if auto-signin fails
+          return { data: data, error: null };
+        }
+      }
+
+      return { data, error: null };
     } catch (error) {
-      return { data: null, error };
+      const errorMessage =
+        error instanceof Error ? error.message : "Sign up failed";
+      return { data: null, error: new Error(errorMessage) };
     }
   }
 
@@ -57,11 +76,15 @@ class AuthService {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message || "Sign in failed");
+      }
 
       return { data, error: null };
     } catch (error) {
-      return { data: null, error };
+      const errorMessage =
+        error instanceof Error ? error.message : "Sign in failed";
+      return { data: null, error: new Error(errorMessage) };
     }
   }
 
@@ -69,10 +92,14 @@ class AuthService {
   async signOut() {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message || "Sign out failed");
+      }
       return { error: null };
     } catch (error) {
-      return { error };
+      const errorMessage =
+        error instanceof Error ? error.message : "Sign out failed";
+      return { error: new Error(errorMessage) };
     }
   }
 
@@ -84,11 +111,11 @@ class AuthService {
         error,
       } = await supabase.auth.getUser();
 
-      if (error) throw error;
-
+      // Don't throw - just return the user (null if not authenticated)
       return { user, error: null };
     } catch (error) {
-      return { user: null, error };
+      // Return null user without error - unauthenticated is a valid state
+      return { user: null, error: null };
     }
   }
 
@@ -100,11 +127,11 @@ class AuthService {
         error,
       } = await supabase.auth.getSession();
 
-      if (error) throw error;
-
+      // Don't throw - just return the session (null if not authenticated)
       return { session, error: null };
     } catch (error) {
-      return { session: null, error };
+      // Return null session without error - unauthenticated is a valid state
+      return { session: null, error: null };
     }
   }
 
@@ -124,11 +151,15 @@ class AuthService {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message || "Password reset failed");
+      }
 
       return { data, error: null };
     } catch (error) {
-      return { data: null, error };
+      const errorMessage =
+        error instanceof Error ? error.message : "Password reset failed";
+      return { data: null, error: new Error(errorMessage) };
     }
   }
 

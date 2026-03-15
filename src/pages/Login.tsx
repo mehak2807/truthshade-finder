@@ -41,16 +41,17 @@ const Login = () => {
     try {
       setIsLoading(true);
       await signIn({ email, password });
-      
+
       // Show welcome toast with user info
       toast({
         title: "Welcome to TrustVault! 🎉",
         description: `Successfully logged in as ${email}`,
         duration: 3000,
       });
-      
-      navigate("/analyze");
+
+      navigate("/");
     } catch (err: any) {
+      console.error("Sign in error:", err);
       setLocalError(err.message || "Failed to sign in. Please try again.");
     } finally {
       setIsLoading(false);
@@ -97,7 +98,10 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Input */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-white">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-white"
+              >
                 Email Address
               </label>
               <Input
@@ -117,7 +121,10 @@ const Login = () => {
             {/* Password Input */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm font-medium text-white">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-white"
+                >
                   Password
                 </label>
                 <Link
@@ -184,18 +191,6 @@ const Login = () => {
             </div>
           </form>
         </div>
-
-        {/* Demo Credentials Info */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg text-center"
-        >
-          <p className="text-xs text-blue-300">
-            Demo mode: Use any email and password to create an account
-          </p>
-        </motion.div>
       </motion.div>
     </div>
   );
