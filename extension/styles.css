@@ -154,14 +154,46 @@ textarea:focus {
   background: #fff;
 }
 
-.primary-btn {
+.button-group {
   margin-top: 12px;
-  width: 100%;
+  display: flex;
+  gap: 8px;
+}
+
+.detect-btn {
+  flex: 1;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #00d97e, #00c969);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.detect-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #00c969, #00b759);
+  box-shadow: 0 4px 12px rgba(0, 217, 126, 0.3);
+}
+
+.detect-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.detect-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.primary-btn {
+  flex: 1;
   border: 0;
   border-radius: 10px;
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: white;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   padding: 10px 12px;
   cursor: pointer;

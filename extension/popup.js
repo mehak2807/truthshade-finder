@@ -5,6 +5,7 @@ const dropZone = document.getElementById("dropZone");
 const languageSelect = document.getElementById("languageSelect");
 const preview = document.getElementById("preview");
 const checkBtn = document.getElementById("checkBtn");
+const detectBtn = document.getElementById("detectBtn");
 const loading = document.getElementById("loading");
 const resultCard = document.getElementById("resultCard");
 const scoreText = document.getElementById("scoreText");
@@ -237,6 +238,61 @@ async function initLanguagePreference() {
   languageSelect.value = preferred;
 }
 
+async function startSnipMode() {
+  try {
+    setStatus("Starting snip mode...", "idle");
+    
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const activeTab = tabs[0];
+
+    if (!activeTab?.id) {
+      setStatus("No active tab", "warn");
+      return;
+    }
+
+    detectBtn.disabled = true;
+    detectBtn.textContent = "📸 Snip mode active... (check the page)";
+
+    await chrome.tabs.sendMessage(activeTab.id, { type: "START_SNIP_MODE" });
+    setStatus("Snip mode active", "idle");
+  } catch (error) {
+    setStatus("Snip mode failed", "warn");
+    detectBtn.disabled = false;
+    detectBtn.textContent = "📸 Detect Text (Snip)";
+    console.error("Snip mode error:", error);
+  }
+}
+
+// Listen for messages from content script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "SNIP_COMPLETE") {
+    const extractedText = message.text;
+    textInput.value = extractedText;
+    setStatus("Text extracted!", "ok");
+    
+    detectBtn.disabled = false;
+    detectBtn.textContent = "📸 Detect Text (Snip)";
+    
+    sendResponse({ success: true, message: "Text received in popup" });
+  } else if (message.type === "SNIP_ERROR") {
+    setStatus("Snip error", "warn");
+    warningText.hidden = false;
+    warningText.textContent = message.message || "Failed to extract text from the selected area.";
+    
+    detectBtn.disabled = false;
+    detectBtn.textContent = "📸 Detect Text (Snip)";
+    
+    sendResponse({ acknowledged: true });
+  } else if (message.type === "SNIP_CANCELLED") {
+    setStatus("Snip cancelled", "idle");
+    
+    detectBtn.disabled = false;
+    detectBtn.textContent = "📸 Detect Text (Snip)";
+    
+    sendResponse({ acknowledged: true });
+  }
+});
+
 async function runVerification() {
   const text = textInput.value.trim();
   const useImage = !text && !!imageData;
@@ -313,6 +369,10 @@ document.addEventListener("paste", (event) => {
 
 checkBtn.addEventListener("click", () => {
   void runVerification();
+});
+
+detectBtn.addEventListener("click", () => {
+  void startSnipMode();
 });
 
 languageSelect.addEventListener("change", () => {
